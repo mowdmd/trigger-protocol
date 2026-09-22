@@ -17,12 +17,11 @@ This document defines the canonical vocabulary. Implementations MAY add extensio
 | Resource | The object, account, system, person, dataset, environment, or domain affected | What is affected |
 | Proposal | A non-authoritative recommendation to perform an action | Intelligence/output |
 | Review | Examination or alteration of a proposal before authorization | Deliberation |
-| Decision | A recorded determination about a proposal | Accept/reject/modify/defer/etc. |
+| Decision | A recorded determination about a proposal | Approve/reject/modify/defer/request_second_opinion |
 | Authority | A bounded grant permitting an actor to authorize a class of actions | Why the actor may authorize |
 | Delegation | A bounded transfer of authority from grantor to grantee | How authority is derived |
 | Trigger | The explicit authorization event that permits execution | Boundary crossing |
 | Receipt | Portable machine-readable evidence of a Trigger | Interoperability artifact |
-| Receipt | Portable machine-readable evidence of a trigger | Interoperability artifact |
 | Execution | The actual attempt to perform the authorized action | Side effect |
 | Outcome | Observation of what resulted from execution | Consequence |
 | Evidence | Material used to support review or authorization | Decision basis |
@@ -36,9 +35,11 @@ The canonical lifecycle is:
 
 PROPOSE -> REVIEW -> DECIDE -> TRIGGER -> EXECUTE -> OUTCOME
 
-REJECT, DEFER, MODIFY, and SECOND_OPINION are decision outcomes and MUST NOT be interpreted as execution authorization.
+`reject`, `modify`, `defer`, and `request_second_opinion` are decision values and MUST NOT be interpreted as execution authorization.
 
-A trigger MUST reference the proposal and the decision that produced it. Execution MUST reference the trigger. Outcome SHOULD reference execution.
+Review is a deliberation stage, not an authorization requirement imposed by the core. A Decision MAY be informed by one or more Reviews, but a core Decision Record is not required to contain a Review reference.
+
+A Trigger is the semantic authorization event. A Trigger Receipt is its portable machine-readable representation. A receipt is not a second independent authorization event and does not manufacture authority. Execution references the Trigger event; a deployment MAY also retain the receipt ID for audit or transport correlation.
 
 ## Semantic invariants
 
@@ -48,10 +49,11 @@ A trigger MUST reference the proposal and the decision that produced it. Executi
 4. Only an explicit approved Trigger may authorize execution.
 5. Authority is separate from the actor's identity.
 6. Delegated authority cannot exceed its grantor's authority.
-7. A constraint applies to the trigger and MUST be enforced by the executor.
+7. A constraint applies to the Trigger and MUST be enforced by the executor.
 8. Expired or revoked authority MUST NOT authorize execution.
 9. Rejection and dissent are durable records; they are never converted into approval by omission.
 10. Outcome does not retroactively validate an unauthorized execution.
+11. A Trigger Receipt is evidence of an authorization event, not proof that the surrounding authority or governance system is legitimate.
 
 ## Vocabulary extensibility
 
