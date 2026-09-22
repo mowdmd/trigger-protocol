@@ -187,7 +187,7 @@ npx trigger-mcp-proxy \
 
 Gate mode blocks an unauthorized `tools/call` before it reaches the upstream server. The adapter performs local receipt and invocation checks; it does **not** by itself establish that the referenced proposal, decision, or authority exists in an external trust system. Those checks remain deployment responsibilities.
 
-> **Important:** observe mode is not a security boundary. Gate mode is the Trigger Protocol enforcement point.
+> **Important:** observe mode is not a security boundary. Gate mode is the receipt/invocation enforcement point; full execution conformance still requires deployment-side Decision and authority verification.
 
 ### 3. See the boundary around a destructive action
 
