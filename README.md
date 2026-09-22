@@ -185,7 +185,7 @@ npx trigger-mcp-proxy \
   -- npx -y <your-mcp-server> <args>
 ```
 
-Gate mode blocks an unauthorized `tools/call` before it reaches the upstream server.
+Gate mode blocks an unauthorized `tools/call` before it reaches the upstream server. The adapter performs local receipt and invocation checks; it does **not** by itself establish that the referenced proposal, decision, or authority exists in an external trust system. Those checks remain deployment responsibilities.
 
 > **Important:** observe mode is not a security boundary. Gate mode is the Trigger Protocol enforcement point.
 
