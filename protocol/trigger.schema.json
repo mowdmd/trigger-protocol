@@ -1,6 +1,6 @@
 {
   "$schema":"https://json-schema.org/draft/2020-12/schema",
-  "$id":"https://github.com/mowdmd/trigger-protocol/blob/main/protocol/trigger.schema.json",
+  "$id":"https://trigger-protocol.org/schema/trigger.schema.json",
   "title":"Trigger Authorization",
   "description":"Machine-readable authorization event at the decision-to-action boundary.",
   "type":"object",
