@@ -31,11 +31,11 @@ Transport adapters SHOULD wrap protocol objects in an envelope:
   "body": {}
 }
 
-The envelope identifies the protocol and object type; it does not itself grant authority.
+The envelope identifies the protocol and object type; it does not itself grant authority. The canonical envelope type values are `proposal`, `review`, `decision`, `authority`, `delegation`, `trigger.receipt`, `execution`, and `outcome`. These correspond to the core schemas under `protocol/`; the receipt type denotes the portable Trigger Receipt representation.
 
 ## Compatibility
 
-A v0.2 implementation MUST accept canonical core fields, reject structurally invalid records, preserve unknown extension fields when forwarding records, preserve object IDs and references, distinguish approval from all non-approval decisions, enforce trigger validity at execution time, and expose enough information to determine the authority, scope, constraints, and validity interval used for execution. The core binding MUST preserve the proposal hash from Proposal through Decision into Trigger/Receipt; a Trigger MUST NOT authorize a materially different proposal or action merely because the decision ID is valid.
+A v0.2 implementation MUST accept canonical core fields, reject structurally invalid records, preserve unknown extension fields when forwarding records, preserve object IDs and references, distinguish approval from all non-approval decisions, enforce Trigger validity at execution time, and expose enough information to determine the authority, scope, constraints, and validity interval used for execution. The core binding MUST preserve the proposal hash from Proposal through Decision into Trigger/Receipt; a Trigger MUST NOT authorize a materially different proposal or action merely because the decision ID is valid.
 
 Implementations MAY support additional protocol versions. They MUST NOT silently reinterpret a record from another version.
 
@@ -54,7 +54,9 @@ Example:
 
 Interoperability does not imply trust. A receiving executor MUST independently verify the authority and constraints relevant to its own execution context.
 
-Cryptographic signatures, identity federation, revocation registries, and transport authentication are profiles layered on the core protocol rather than assumptions of the semantic model. The Ed25519 receipt profile is versioned separately as `0.3` and does not change `trigger/0.2` semantics.
+The execution enforcement path MAY be split across components. The reference MCP proxy is an invocation-level receipt gate: it verifies receipt structure, validity, and exact tool/argument binding, but does not dereference `decision_id`, prove that the referenced Decision is `approve`, or establish actor authority/delegation legitimacy. Those are deployment-side trust-layer checks required for full execution conformance. A deployment MUST ensure those checks occur before the consequential side effect, whether in the executor itself or in another trusted enforcement component on the actual execution path.
+
+Cryptographic signatures, identity federation, revocation registries, and transport authentication are profiles layered on the core protocol rather than assumptions of the semantic model. The Ed25519 receipt profile is versioned separately as `0.3` and does not change `trigger/0.2` semantics. A valid receipt signature MUST NOT be treated as a substitute for authority or Decision validation.
 
 ## MCP adapter profile
 
@@ -62,9 +64,11 @@ The reference `trigger-mcp-proxy` maps an MCP `tools/call` to the Trigger Protoc
 
 The adapter is intentionally asymmetric: the upstream MCP server remains the execution target, while the proxy is the receipt/invocation enforcement point. It does not by itself dereference `decision_id`, prove that the referenced Decision is `approve`, or establish authority/identity legitimacy. Those remain deployment trust-layer checks required for full execution conformance. Observe mode is transparent and therefore provides instrumentation, not enforcement.
 
+The reference adapter currently profiles `tools/call`. Other MCP operations are outside this adapter profile and do not silently inherit receipt-gated semantics.
+
 ## Proposal hash canonicalization
 
-The semantic core uses SHA-256 for `proposal_hash`. The hashed representation is **RFC 8785 JSON Canonicalization Scheme (JCS)** encoded as UTF-8.
+The semantic core uses SHA-256 for `proposal_hash`. The hashed representation is the **complete Proposal object**, excluding any transport envelope or external wrapper, represented using RFC 8785 JSON Canonicalization Scheme (JCS) and encoded as UTF-8. All Proposal core fields and present extension fields are therefore part of the hashed representation; adding, removing, or changing a Proposal field changes its hash.
 
 The canonicalization rules are:
 
@@ -79,3 +83,7 @@ The canonicalization rules are:
 The repository's JavaScript implementation is shared at `protocol/canonical-json.mjs`; the Python conformance implementation is `protocol/canonical_json.py`. Independent implementations MUST produce the same canonical UTF-8 bytes and therefore the same SHA-256 digest. Conformance vectors include `0.0`, `1.0`, decimal/scientific thresholds, negative zero, and key ordering.
 
 Implementations MUST hash canonical content rather than a transport-specific serialization.
+
+## Authority pattern matching
+
+`action_patterns` and `resource_patterns` express deployment policy constraints on the corresponding Trigger/Proposal fields. Trigger Protocol 0.2 does not define a universal pattern language or matching algorithm. A conforming deployment MUST have an independently defined rule for determining whether the authority covers the requested action/resource; an executor MUST NOT assume that the presence of a pattern string alone proves coverage.
