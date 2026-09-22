@@ -2,6 +2,7 @@
   "id": "tr-destructive-demo-001",
   "protocol": "trigger/0.3",
   "proposal_id": "delete-demo-001",
+  "proposal_hash": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
   "decision_id": "decision-delete-demo-001",
   "actor": "human:demo-operator",
   "authority_id": "demo-destructive-action",
