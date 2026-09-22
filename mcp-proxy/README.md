@@ -40,7 +40,7 @@ The receipt must:
 - not be expired;
 - not be explicitly revoked;
 - use `action: "mcp.tools/call"`;
-- contain a valid non-empty `scope` (string or non-empty string array) that covers the requested tool;
+- contain a valid non-empty `scope` that covers the requested tool (string for `trigger/0.2`; string or non-empty string array for `trigger/0.3`);
 - contain the MCP extension with an exact non-empty `tool_name`;
 - contain `arguments_sha256` and match the canonical-JSON SHA-256 of the requested arguments.
 
@@ -82,6 +82,8 @@ For consequential tools, the MCP adapter requires the receipt to bind to the exa
 
 Arguments are hashed from canonical JSON with object keys sorted recursively.
 
+For `trigger/0.3`, `scope` may be an array, but the current adapter still requires one exact `tool_name` and one exact arguments hash for each `tools/call`. Array scope does not expand that concrete binding to multiple tools or invocations.
+
 ## One-minute demo
 
 From the repository root:
@@ -93,6 +95,12 @@ npx trigger-mcp-proxy \
   --mode gate \
   --receipt ./examples/mcp-demo-receipt.json \
   -- node ./examples/mcp-demo-server.mjs
+```
+
+Then send:
+
+```json
+{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"hello","arguments":{"name":"Trigger"}}}
 ```
 
 The included demo server exposes a harmless `hello` tool. The example receipt authorizes exactly `hello` with the demo invocation arguments.
