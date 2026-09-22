@@ -41,8 +41,14 @@ assert.equal(trigger.properties.protocol.const, "trigger/0.2");
 assert.equal(decision.properties.protocol.const, "trigger/0.2");
 assert.equal(receipt.properties.protocol.const, "trigger/0.2");
 assert.equal(receipt.properties.revoked.type, "boolean");
+assert.equal(receipt.$id, "https://trigger-protocol.org/schema/trigger-receipt.schema.json");
+const envelope = JSON.parse(readFileSync(resolve(root, "protocol/envelope.schema.json"), "utf8"));
+assert.equal(envelope.$id, "https://trigger-protocol.org/schema/envelope.schema.json");
+
 const receipt03 = JSON.parse(readFileSync(resolve(root, "protocol/trigger-receipt-0.3.schema.json"), "utf8"));
 assert.equal(receipt03.properties.revoked.type, "boolean");
+assert.equal(receipt03.properties.resource.type, "string");
+assert.equal(receipt03.properties.delegation_id.type, "string");
 assert.equal(receipt03.properties.scope.oneOf[0].minLength, 1);
 assert.equal(receipt03.properties.scope.oneOf[1].minItems, 1);
 
