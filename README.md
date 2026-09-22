@@ -135,6 +135,14 @@ npx trigger-mcp-proxy \
 
 The proxy is now between the client and the server. Only a `tools/call` authorized by the receipt is forwarded.
 
+With the proxy running, send this JSON-RPC request on its stdin:
+
+```json
+{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"hello","arguments":{"name":"Trigger"}}}
+```
+
+The included receipt binds the authorization to the `hello` tool and the exact `{"name":"Trigger"}` arguments, so this request is forwarded and returns the harmless demo response. A different tool or arguments are blocked.
+
 For an actual MCP client/server, the same insertion point is:
 
 ```text
