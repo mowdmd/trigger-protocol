@@ -1,1 +1,27 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://github.com/mowdmd/trigger-protocol/blob/main/protocol/trigger.schema.json","title":"Trigger Authorization","type":"object","required":["id","protocol","proposal_id","proposal_hash","decision_id","actor","authority_id","action","issued_at"],"properties":{"id":{"type":"string","minLength":1},"protocol":{"const":"trigger/0.2"},"proposal_id":{"type":"string","minLength":1},"proposal_hash":{"type":"string","minLength":1},"decision_id":{"type":"string","minLength":1},""actor":{"type":"string","minLength":1},"authority_id":{"type":"string","minLength":1},"action":{"type":"string","minLength":1},"resource":{"type":"string"},"scope":{"type":"string"},"constraints":{"type":"object"},"issued_at":{"type":"string","format":"date-time"},"expires_at":{"type":"string","format":"date-time"},"delegation_id":{"type":"string"},"receipt_id":{"type":"string"},"extensions":{"type":"object"}},"additionalProperties":false}
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://github.com/mowdmd/trigger-protocol/blob/main/protocol/trigger.schema.json",
+  "title":"Trigger Authorization",
+  "description":"Machine-readable authorization event at the decision-to-action boundary.",
+  "type":"object",
+  "required":["id","protocol","proposal_id","proposal_hash","decision_id","actor","authority_id","action","issued_at"],
+  "properties":{
+    "id":{"type":"string","minLength":1},
+    "protocol":{"const":"trigger/0.2"},
+    "proposal_id":{"type":"string","minLength":1},
+    "proposal_hash":{"type":"string","minLength":1},
+    "decision_id":{"type":"string","minLength":1},
+    "actor":{"type":"string","minLength":1},
+    "authority_id":{"type":"string","minLength":1},
+    "action":{"type":"string","minLength":1},
+    "resource":{"type":"string"},
+    "scope":{"type":"string"},
+    "constraints":{"type":"object"},
+    "issued_at":{"type":"string","format":"date-time"},
+    "expires_at":{"type":"string","format":"date-time"},
+    "delegation_id":{"type":"string"},
+    "receipt_id":{"type":"string"},
+    "extensions":{"type":"object"}
+  },
+  "additionalProperties":false
+}
