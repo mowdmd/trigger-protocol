@@ -32,6 +32,7 @@
     "expires_at": {"type": "string", "format": "date-time"},
     "delegation_id": {"type": "string"},
     "nonce": {"type": "string", "minLength": 1},
+    "revoked": {"type": "boolean"},
     "extensions": {"type": "object"}
   },
   "additionalProperties": false
