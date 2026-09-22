@@ -4,11 +4,13 @@ import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-
-from test_vectors import valid_receipt, VECTORS
-from canonical_json import canonical_json
+import sys
 
 ROOT=Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT.parent))
+from test_vectors import valid_receipt, VECTORS
+from protocol.canonical_json import canonical_json
+
 CANONICAL_VECTORS=json.loads((ROOT/"canonical-vectors.json").read_text(encoding="utf-8"))
 decision=json.loads((ROOT.parent/"examples"/"decision-rejection.json").read_text(encoding="utf-8"))
 
