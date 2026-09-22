@@ -61,3 +61,15 @@ Cryptographic signatures, identity federation, revocation registries, and transp
 The reference `trigger-mcp-proxy` maps an MCP `tools/call` to the Trigger Protocol action `mcp.tools/call`. In gate mode, the proxy forwards a call only when a valid Trigger Receipt covers the requested tool/scope. A namespaced extension may bind the receipt to the exact tool name and canonical-JSON SHA-256 of its arguments.
 
 The adapter is intentionally asymmetric: the upstream MCP server remains the execution target, while the proxy is the authorization enforcement point. Observe mode is transparent and therefore provides instrumentation, not enforcement.
+
+
+## Proposal hash canonicalization
+
+The semantic core uses SHA-256 for `proposal_hash`. The hashed representation is canonical JSON encoded as UTF-8:
+
+- object keys are sorted lexicographically;
+- array order is preserved;
+- strings, numbers, booleans, and null use standard JSON representations;
+- insignificant whitespace is omitted.
+
+This is the same deterministic representation used by the reference conformance implementation. Implementations MUST hash canonical content rather than a transport-specific serialization.
