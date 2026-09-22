@@ -1,6 +1,0 @@
-{
-  "protocol":"trigger/0.1",
-  "proposal":{"id":"proc-001","agent":"procurement-agent","action":"purchase","scope":"supplier:A","risk":"medium","reversibility":"partial","evidence":["quote-1","quote-2"]},
-  "authorization":{"decision":"reject","actor":"human:buyer","authority":"procurement-under-500k","reason":"Alternative quote has lower total cost.","timestamp":"2026-01-01T10:00:00Z"},
-  "execution":{"executor":"procurement-system","status":"cancelled"}
-}
