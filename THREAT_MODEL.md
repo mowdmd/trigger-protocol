@@ -42,6 +42,11 @@ Humans approve recommendations without meaningful review.
 
 Mitigation: expose evidence, uncertainty, alternatives, and dissent; support reject and second opinion. The protocol records the decision boundary but cannot guarantee the quality of human judgment.
 
+## Self-assessed gate weakening
+A proposal-generating agent assigns an artificially low risk or high reversibility classification in order to obtain a weaker authorization gate.
+
+Mitigation: required gate strength is determined by deployment policy or governance rules rather than solely by the proposing model's assessment. The executor enforces the resulting authorization requirements independently.
+
 ## Stale authority
 An authorization survives after circumstances change.
 
