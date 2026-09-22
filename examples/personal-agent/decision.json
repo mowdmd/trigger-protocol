@@ -1,6 +1,0 @@
-{
-  "protocol":"trigger/0.1",
-  "proposal":{"id":"personal-001","agent":"personal-agent","action":"send_email","scope":"drafted_replies","risk":"medium","reversibility":"irreversible"},
-  "authorization":{"decision":"modify","actor":"human:user","authority":"personal-communications","reason":"Change wording before sending.","timestamp":"2026-01-01T12:00:00Z"},
-  "execution":{"executor":"mail-system","status":"pending","action":"send_email"}
-}
