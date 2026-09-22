@@ -165,6 +165,20 @@ try {
   });
   assert.match(blockedWrongArguments.out, /Trigger Protocol authorization required/);
 
+  const invalidRevoked = { ...baseReceipt, revoked: "false" };
+  const invalidRevokedPath = new URL("./invalid-revoked.json", `file://${tempDir}/`).pathname;
+  writeFileSync(invalidRevokedPath, JSON.stringify(invalidRevoked));
+  const blockedInvalidRevoked = await runGate(invalidRevokedPath, { jsonrpc: "2.0", id: 8, method: "tools/call", params: { name: "hello", arguments: { name: "Trigger" } } });
+  assert.equal(blockedInvalidRevoked.exitCode, 1);
+  assert.match(blockedInvalidRevoked.err, /invalid revoked/);
+
+  const revokedReceipt = { ...baseReceipt, revoked: true };
+  const revokedPath = new URL("./revoked.json", `file://${tempDir}/`).pathname;
+  writeFileSync(revokedPath, JSON.stringify(revokedReceipt));
+  const blockedRevoked = await runGate(revokedPath, { jsonrpc: "2.0", id: 9, method: "tools/call", params: { name: "hello", arguments: { name: "Trigger" } } });
+  assert.equal(blockedRevoked.exitCode, 1);
+  assert.match(blockedRevoked.err, /receipt is revoked/);
+
   const futureReceipt = { ...baseReceipt, issued_at: "2099-01-01T00:00:00Z" };
   const futurePath = new URL("./future.json", `file://${tempDir}/`).pathname;
   writeFileSync(futurePath, JSON.stringify(futureReceipt));
