@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { createHash, createPublicKey, verify as verifySignature } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { createInterface } from "node:readline";
+import { canonicalJson, canonicalJsonSha256 } from "../protocol/canonical-json.mjs";
 
 const NS = "https://trigger-protocol.org/ns/mcp-proxy";
 
@@ -71,14 +72,8 @@ function parseArgs(argv) {
   return { mode, receiptPath, publicKeyPath, requireSignature, command };
 }
 
-function canonicalJson(value) {
-  if (value === null || typeof value !== "object") return JSON.stringify(value);
-  if (Array.isArray(value)) return "[" + value.map(canonicalJson).join(",") + "]";
-  return "{" + Object.keys(value).sort().map(k => JSON.stringify(k) + ":" + canonicalJson(value[k])).join(",") + "}";
-}
-
 function sha256(value) {
-  return createHash("sha256").update(canonicalJson(value)).digest("hex");
+  return canonicalJsonSha256(value, createHash);
 }
 
 function verifyReceiptSignature(receipt, publicKeyPath) {
