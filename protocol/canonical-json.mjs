@@ -15,6 +15,9 @@ function serialize(value) {
   if (typeof value === "boolean") return value ? "true" : "false";
   if (typeof value === "number") {
     if (!Number.isFinite(value)) throw new TypeError("JCS does not permit non-finite numbers");
+    if (Number.isInteger(value) && !Number.isSafeInteger(value)) {
+      throw new TypeError("JCS/I-JSON requires integers within the safe integer range");
+    }
     return JSON.stringify(value);
   }
   if (Array.isArray(value)) {
