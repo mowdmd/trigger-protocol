@@ -1,5 +1,4 @@
 # Trigger Protocol Specification
-
 Version: 0.2
 Status: Experimental
 
@@ -40,9 +39,10 @@ A Decision Record MUST include:
 - a `proposal_hash` binding the decision to the exact proposal representation that was judged;
 - the deciding `actor`;
 - one decision value: `approve`, `reject`, `modify`, `defer`, or `request_second_opinion`;
-- `issued_at`.
+- `issued_at`;
+- `authority_id` identifying the authority asserted for the decision.
 
-The `proposal_hash` is a SHA-256 content hash of the canonical proposal representation. Canonical JSON is RFC 8785 JCS: UTF-8 encoded JSON with ECMAScript-compatible number serialization, UTF-16 object-key ordering, preserved array order, normalized negative zero, and no insignificant whitespace. Non-finite numbers and integers outside the I-JSON safe integer range are rejected. Implementations MUST hash the exact canonical bytes; they MUST NOT hash a pretty-printed or transport-specific representation.
+The `proposal_hash` is a SHA-256 content hash of the complete canonical Proposal representation, as defined in protocol/interoperability.md. The transport envelope is not part of the hashed representation. All Proposal core fields and present extension fields are included. Canonical JSON is RFC 8785 JCS: UTF-8 encoded JSON with ECMAScript-compatible number serialization, UTF-16 object-key ordering, preserved array order, normalized negative zero, and no insignificant whitespace. Non-finite numbers and integers outside the I-JSON safe integer range are rejected. Implementations MUST hash the exact canonical bytes; they MUST NOT hash a pretty-printed or transport-specific representation.
 
 Only `approve` can lead to a Trigger. `reject`, `modify`, `defer`, and `request_second_opinion` MUST NOT be interpreted as execution authorization.
 
@@ -50,7 +50,7 @@ Only `approve` can lead to a Trigger. `reject`, `modify`, `defer`, and `request_
 
 A later decision is a subsequent determination, not a rewrite of history. A later approval may therefore coexist with an earlier rejection, for example when a revised proposal is approved. The earlier Decision Record remains bound to the proposal hash that was originally judged.
 
-A Decision Record MAY include authority, reason, expiry, and extension fields where applicable.
+A Decision Record MAY include reason, expiry, and extension fields where applicable. The core does not require a Review reference; deployments may correlate Reviews through the shared proposal identity or extensions.
 
 ## 6. Trigger
 
@@ -58,11 +58,11 @@ A Trigger MUST reference the exact proposal under decision, the approving decisi
 
 The authorization binding is the tuple of the referenced proposal identity/hash, approving decision, actor, authority, action, resource/scope, constraints, and validity interval. An executor MUST compare the Trigger against the referenced Decision and Proposal rather than treating a matching ID alone as sufficient.
 
-A Trigger Receipt is the portable representation of this authorization event. See protocol/signature-profile.md for the optional Ed25519 signature profile.
+A Trigger Receipt is the portable machine-readable representation of the Trigger authorization event. It is not a second independent authorization event and does not manufacture authority. The semantic Trigger is referenced by `trigger_id` from Execution records; a deployment MAY retain the receipt ID separately for audit or transport correlation. See protocol/signature-profile.md for the optional Ed25519 signature profile.
 
 ## 7. Execution gate
 
-An executor MUST independently verify before a consequential action:
+An executor, or a trusted enforcement component on the actual execution path, MUST independently ensure before a consequential action that:
 
 - the referenced decision is an approval;
 - the actor holds or validly derives the referenced authority;
@@ -78,9 +78,11 @@ An executor MUST independently verify before a consequential action:
 
 An executor MUST reject or block execution when these checks fail. Successful execution does not retroactively legitimize a failed authorization check.
 
+The reference MCP proxy is an invocation-level receipt gate. It verifies receipt structure, validity, and exact tool/argument binding, but does not by itself dereference `decision_id`, prove that the referenced Decision is `approve`, or establish actor authority/delegation legitimacy. Those checks remain deployment-side trust responsibilities and MUST occur before the consequential side effect.
+
 ## 8. Receipt signatures
 
-The v0.3 signature profile defines detached Ed25519 signatures over the canonical receipt representation. Signature verification authenticates receipt integrity but does not establish authority; executors must still validate authority independently.
+The v0.3 signature profile defines detached Ed25519 signatures over the canonical receipt representation. Signature verification authenticates receipt integrity but does not establish authority, identity legitimacy, or Decision approval; executors MUST still validate those independently. A deployment MUST NOT treat possession of a valid receipt signature as sufficient authority unless its own trust policy independently establishes that relationship.
 
 ## 9. Risk and reversibility
 
