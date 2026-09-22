@@ -33,16 +33,18 @@ proposal
 
 The proxy verifies the receipt at the last possible boundary before the side effect reaches the MCP server.
 
-The receipt should bind at least:
+For the MCP adapter, the receipt MUST bind all three of:
 
-- the authorized action;
-- the tool/scope;
-- the validity interval;
-- the authority;
-- the decision;
-- optionally the exact arguments.
+- `action: "mcp.tools/call"`;
+- a non-empty `scope` covering the requested tool;
+- the exact MCP `tool_name`;
+- the exact canonical-JSON SHA-256 of the request arguments.
+
+Missing, malformed, or mismatched bindings are rejected. This adapter does not use an unbound receipt as a broad authorization fallback.
 
 The proxy does not create authority. It consumes an authorization artifact issued elsewhere.
+
+The proxy does not dereference `decision_id` or an authority registry by itself. A deployment that needs full cross-object conformance MUST perform those checks in its trust/execution layer.
 
 ## Why MCP first?
 
