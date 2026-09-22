@@ -16,14 +16,16 @@ The receipt carries a detached signature:
 
 The signature covers the canonical JSON representation of the complete receipt with the signature property removed.
 
-Canonicalization is the Trigger Protocol deterministic JSON form:
+Canonicalization uses RFC 8785 JSON Canonicalization Scheme (JCS):
 
-- objects: UTF-8 JSON with lexicographically sorted keys;
-- arrays: preserve order;
-- strings/numbers/booleans/null: standard JSON representation;
+- object keys use UTF-16 code-unit ordering;
+- arrays preserve order;
+- numbers use ECMAScript JSON number serialization;
+- negative zero serializes as `0`;
+- non-finite numbers and unsafe integers are rejected;
 - no insignificant whitespace.
 
-The signed bytes are UTF-8 encoded canonical JSON.
+The signed bytes are UTF-8 encoded canonical JSON. The repository's shared JavaScript implementation is `protocol/canonical-json.mjs`.
 
 ## Verification
 
