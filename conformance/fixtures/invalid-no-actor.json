@@ -1,8 +1,0 @@
-{
-  "receipt_id":"tr-invalid",
-  "protocol":"trigger/0.1",
-  "proposal_id":"p-1",
-  "authority":"experiment-approval",
-  "action":"run_experiment",
-  "issued_at":"2027-01-01T09:00:00Z"
-}
