@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { spawn } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { canonicalJsonSha256 } from "../protocol/canonical-json.mjs";
 
 function hash(value) {
@@ -52,3 +52,92 @@ assert.match(stdout, /"Hello, Trigger\."/);
 assert.match(stderr, /"event":"authorized"/);
 
 console.log("mcp-proxy tests: PASS");
+
+
+async function runGate(receiptPath, request) {
+  const child = spawn(process.execPath, [
+    proxy.pathname,
+    "--mode", "gate",
+    "--receipt", receiptPath,
+    "--",
+    process.execPath, demo.pathname
+  ], { stdio: ["pipe", "pipe", "pipe"] });
+
+  let out = "";
+  let err = "";
+  child.stdout.on("data", chunk => { out += chunk; });
+  child.stderr.on("data", chunk => { err += chunk; });
+  child.stdin.write(JSON.stringify(request) + "\n");
+  child.stdin.end();
+
+  const exitCode = await new Promise((resolve, reject) => {
+    child.once("error", reject);
+    child.once("exit", code => resolve(code));
+  });
+  return { exitCode, out, err };
+}
+
+const tempDir = mkdtempSync(new URL("trigger-proxy-tests-", "file:///tmp/").pathname);
+try {
+  const baseReceipt = JSON.parse(readFileSync(receipt, "utf8"));
+
+  const missingScope = { ...baseReceipt };
+  delete missingScope.scope;
+  const missingScopePath = new URL("./missing-scope.json", `file://${tempDir}/`).pathname;
+  writeFileSync(missingScopePath, JSON.stringify(missingScope));
+  const blocked = await runGate(missingScopePath, {
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: { name: "hello", arguments: { name: "Trigger" } }
+  });
+  assert.equal(blocked.exitCode, 0, blocked.err);
+  assert.match(blocked.out, /Trigger Protocol authorization required/);
+  assert.match(blocked.err, /"event":"blocked"/);
+
+  const invalidScope = { ...baseReceipt, scope: { tool: "hello" } };
+  const invalidScopePath = new URL("./invalid-scope.json", `file://${tempDir}/`).pathname;
+  writeFileSync(invalidScopePath, JSON.stringify(invalidScope));
+  const blockedType = await runGate(invalidScopePath, {
+    jsonrpc: "2.0",
+    id: 3,
+    method: "tools/call",
+    params: { name: "hello", arguments: { name: "Trigger" } }
+  });
+  assert.equal(blockedType.exitCode, 0, blockedType.err);
+  assert.match(blockedType.out, /Trigger Protocol authorization required/);
+
+  const futureReceipt = { ...baseReceipt, issued_at: "2099-01-01T00:00:00Z" };
+  const futurePath = new URL("./future.json", `file://${tempDir}/`).pathname;
+  writeFileSync(futurePath, JSON.stringify(futureReceipt));
+  const future = spawn(process.execPath, [
+    proxy.pathname,
+    "--mode", "gate",
+    "--receipt", futurePath,
+    "--",
+    process.execPath, demo.pathname
+  ], { stdio: ["ignore", "pipe", "pipe"] });
+  let futureErr = "";
+  future.stderr.on("data", chunk => { futureErr += chunk; });
+  const futureExit = await new Promise(resolve => future.once("exit", resolve));
+  assert.notEqual(futureExit, 0);
+  assert.match(futureErr, /issued_at is in the future/);
+
+  const badExpiry = { ...baseReceipt, expires_at: "2025-01-01T00:00:00Z" };
+  const badExpiryPath = new URL("./bad-expiry.json", `file://${tempDir}/`).pathname;
+  writeFileSync(badExpiryPath, JSON.stringify(badExpiry));
+  const expiry = spawn(process.execPath, [
+    proxy.pathname,
+    "--mode", "gate",
+    "--receipt", badExpiryPath,
+    "--",
+    process.execPath, demo.pathname
+  ], { stdio: ["ignore", "pipe", "pipe"] });
+  let expiryErr = "";
+  expiry.stderr.on("data", chunk => { expiryErr += chunk; });
+  const expiryExit = await new Promise(resolve => expiry.once("exit", resolve));
+  assert.notEqual(expiryExit, 0);
+  assert.match(expiryErr, /receipt is expired/);
+} finally {
+  rmSync(tempDir, { recursive: true, force: true });
+}
