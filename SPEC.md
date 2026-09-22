@@ -84,7 +84,7 @@ The v0.3 signature profile defines detached Ed25519 signatures over the canonica
 
 ## 9. Risk and reversibility
 
-Implementations SHOULD classify risk as low, medium, high, or critical and reversibility as reversible, partial, or irreversible. Higher impact and lower reversibility should normally require stronger authorization. The protocol does not prescribe a universal risk policy.
+Implementations SHOULD classify risk as low, medium, high, or critical and reversibility as reversible, partial, or irreversible. Higher impact and lower reversibility should normally require stronger authorization. Required authorization strength MUST be determined by deployment policy or governance rules, not solely by the proposal-generating model's own risk or reversibility assessment. A model MUST NOT weaken its own authorization boundary by assigning a more favorable risk or reversibility classification to its proposal. The protocol does not prescribe a universal risk policy.
 
 ## 10. Audit and outcome
 
