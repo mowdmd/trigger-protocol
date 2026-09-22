@@ -47,7 +47,7 @@ An executor MUST block execution when these checks fail.
 
 ## Proposal hash
 
-`proposal_hash` is SHA-256 over the canonical JSON representation of the Proposal. Canonical JSON uses UTF-8, lexicographically sorted object keys, preserved array order, standard JSON primitive representations, and no insignificant whitespace.
+`proposal_hash` is SHA-256 over the RFC 8785 JCS canonical JSON representation of the Proposal. Numbers use ECMAScript JSON number serialization; object keys use UTF-16 code-unit ordering; negative zero becomes `0`; non-finite numbers and unsafe integers are rejected. The shared vectors in `conformance/canonical-vectors.json` are exercised by both the Python conformance suite and the JavaScript MCP tests.
 
 ## Negative space
 
