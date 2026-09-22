@@ -1,7 +1,9 @@
 # Trigger Protocol Specification
 
-Version: 0.3
+Version: 0.2
 Status: Experimental
+
+The semantic core is `trigger/0.2`. The optional Ed25519 receipt signature profile is versioned separately as `0.3`.
 
 ## 1. Purpose
 
@@ -52,7 +54,9 @@ A Decision Record MAY include authority, reason, expiry, and extension fields wh
 
 ## 6. Trigger
 
-A Trigger MUST reference a proposal's decision, actor, authority, action, and issuance time. It SHOULD include resource/scope, constraints, policy version, delegation, and expiry where applicable.
+A Trigger MUST reference the exact proposal under decision, the approving decision, actor, authority, action, and issuance time. The portable Trigger Receipt MUST carry `proposal_id`, `proposal_hash`, and `decision_id` so the authorization event can be verified without silently substituting a different proposal.
+
+The authorization binding is the tuple of the referenced proposal identity/hash, approving decision, actor, authority, action, resource/scope, constraints, and validity interval. An executor MUST compare the Trigger against the referenced Decision and Proposal rather than treating a matching ID alone as sufficient.
 
 A Trigger Receipt is the portable representation of this authorization event. See protocol/signature-profile.md for the optional Ed25519 signature profile.
 
@@ -66,7 +70,11 @@ An executor MUST independently verify before a consequential action:
 - delegation, if any, is valid and not revoked;
 - the trigger is within its validity interval;
 - constraints are satisfied;
-- the proposal/decision/trigger references are intact.
+- the proposal/decision/trigger references are intact;
+- the proposal hash matches the referenced proposal;
+- the Trigger action/resource/scope/constraints match the approved proposal;
+- the Trigger's actor and authority match the approved Decision;
+- the Trigger is not being used to reinterpret a non-approval Decision as executable authority.
 
 An executor MUST reject or block execution when these checks fail. Successful execution does not retroactively legitimize a failed authorization check.
 
@@ -90,4 +98,4 @@ Audit data should be sufficient to reconstruct authority and causality while min
 
 JSON/UTF-8 and JSON Schema Draft 2020-12 are the reference representation. Transport is intentionally unspecified. See protocol/interoperability.md.
 
-Implementations MUST NOT silently reinterpret another protocol version. Unknown extension fields MUST be preserved when forwarding records.
+`trigger/0.2` is the semantic core. The `0.3` signature profile adds optional receipt integrity/authenticity without changing the core authority model. Implementations MUST NOT silently reinterpret another protocol version or profile. Unknown extension fields MUST be preserved when forwarding records.
