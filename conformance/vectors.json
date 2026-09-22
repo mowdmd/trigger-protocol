@@ -1,1 +1,80 @@
-{"protocol":"trigger/0.2","vectors":[{"name":"valid approval","valid":true,"receipt":{"id":"tr-1","protocol":"trigger/0.2","proposal_id":"p-1","decision_id":"d-1","actor":"human:alice","authority_id":"auth:deploy","action":"deploy","issued_at":"2026-09-19T00:00:00Z","expires_at":"2026-09-19T01:00:00Z"}},{"name":"missing decision reference","valid":false,"receipt":{"id":"tr-2","protocol":"trigger/0.2","proposal_id":"p-1","actor":"human:alice","authority_id":"auth:deploy","action":"deploy","issued_at":"2026-09-19T00:00:00Z"}},{"name":"future issuance","valid":false,"receipt":{"id":"tr-3","protocol":"trigger/0.2","proposal_id":"p-1","decision_id":"d-1","actor":"human:alice","authority_id":"auth:deploy","action":"deploy","issued_at":"2099-01-01T00:00:00Z"}},{"name":"expired","valid":false,"receipt":{"id":"tr-4","protocol":"trigger/0.2","proposal_id":"p-1","decision_id":"d-1","actor":"human:alice","authority_id":"auth:deploy","action":"deploy","issued_at":"2026-09-18T00:00:00Z","expires_at":"2026-09-18T01:00:00Z"}}]}
+{
+  "protocol":"trigger/0.2",
+  "vectors":[
+    {
+      "name":"valid approval",
+      "valid":true,
+      "receipt":{
+        "id":"tr-1",
+        "protocol":"trigger/0.2",
+        "proposal_id":"p-1",
+        "proposal_hash":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "decision_id":"d-1",
+        "actor":"human:alice",
+        "authority_id":"auth:deploy",
+        "action":"deploy",
+        "issued_at":"2026-09-19T00:00:00Z",
+        "expires_at":"2026-09-19T01:00:00Z"
+      }
+    },
+    {
+      "name":"missing proposal hash",
+      "valid":false,
+      "receipt":{
+        "id":"tr-2",
+        "protocol":"trigger/0.2",
+        "proposal_id":"p-1",
+        "decision_id":"d-1",
+        "actor":"human:alice",
+        "authority_id":"auth:deploy",
+        "action":"deploy",
+        "issued_at":"2026-09-19T00:00:00Z"
+      }
+    },
+    {
+      "name":"missing decision reference",
+      "valid":false,
+      "receipt":{
+        "id":"tr-3",
+        "protocol":"trigger/0.2",
+        "proposal_id":"p-1",
+        "proposal_hash":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "actor":"human:alice",
+        "authority_id":"auth:deploy",
+        "action":"deploy",
+        "issued_at":"2026-09-19T00:00:00Z"
+      }
+    },
+    {
+      "name":"future issuance",
+      "valid":false,
+      "receipt":{
+        "id":"tr-4",
+        "protocol":"trigger/0.2",
+        "proposal_id":"p-1",
+        "proposal_hash":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "decision_id":"d-1",
+        "actor":"human:alice",
+        "authority_id":"auth:deploy",
+        "action":"deploy",
+        "issued_at":"2099-01-01T00:00:00Z"
+      }
+    },
+    {
+      "name":"expired",
+      "valid":false,
+      "receipt":{
+        "id":"tr-5",
+        "protocol":"trigger/0.2",
+        "proposal_id":"p-1",
+        "proposal_hash":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "decision_id":"d-1",
+        "actor":"human:alice",
+        "authority_id":"auth:deploy",
+        "action":"deploy",
+        "issued_at":"2026-09-18T00:00:00Z",
+        "expires_at":"2026-09-18T01:00:00Z"
+      }
+    }
+  ]
+}
