@@ -35,7 +35,8 @@
 - [ ] Delegation validation vectors
 - [ ] Revocation registry profile
 - [ ] Decision replay and governance diff
-- [ ] Cross-object conformance: proposal -> decision -> trigger -> execution
+- [x] Cross-object conformance: proposal -> decision -> trigger -> execution
+- [x] Proposal-hash binding from Proposal -> Decision -> Trigger/Receipt
 - [ ] Replay protection / nonce semantics
 
 ## Long term
@@ -47,5 +48,7 @@
 - [ ] Additional MCP operation profiles
 
 The project should optimize for a small, stable semantic core and broad interoperability, not feature count.
+
+The semantic core deliberately stops at the decision-to-action boundary. Identity binding, authority graphs, revocation registries, replay state, and cryptographic trust remain profiles or deployment responsibilities.
 
 The adoption strategy is deliberately simple: make the boundary useful locally, make the authorization artifact portable, and make integration cheap enough that independent systems can adopt it without surrendering governance to a central service.
