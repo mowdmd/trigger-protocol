@@ -2,12 +2,8 @@
 import { generateKeyPairSync, sign, verify } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import { parseArgs } from "node:util";
+import { canonicalJson } from "../protocol/canonical-json.mjs";
 
-function canonicalJson(value) {
-  if (value === null || typeof value !== "object") return JSON.stringify(value);
-  if (Array.isArray(value)) return "[" + value.map(canonicalJson).join(",") + "]";
-  return "{" + Object.keys(value).sort().map(k => JSON.stringify(k) + ":" + canonicalJson(value[k])).join(",") + "}";
-}
 function unsignedReceipt(receipt) {
   const copy = structuredClone(receipt);
   delete copy.signature;
