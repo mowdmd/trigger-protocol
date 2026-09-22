@@ -155,12 +155,18 @@ function receiptAllows(receipt, toolName, args) {
   if (receipt.action !== "mcp.tools/call") return false;
 
   const scope = receipt.scope;
+  if (typeof scope === "undefined") return false;
+  if (typeof scope !== "string" && !Array.isArray(scope)) return false;
+  if (Array.isArray(scope) && scope.some(value => typeof value !== "string")) return false;
   if (typeof scope === "string" && scope !== "*" && scope !== toolName) return false;
   if (Array.isArray(scope) && !scope.includes("*") && !scope.includes(toolName)) return false;
 
   const mcp = receipt.extensions?.[NS];
-  if (mcp?.tool_name && mcp.tool_name !== toolName) return false;
-  if (mcp?.arguments_sha256 && mcp.arguments_sha256 !== sha256(args ?? {})) return false;
+  if (mcp !== undefined && (!mcp || typeof mcp !== "object" || Array.isArray(mcp))) return false;
+  if (mcp?.tool_name !== undefined &&
+      (typeof mcp.tool_name !== "string" || !mcp.tool_name || mcp.tool_name !== toolName)) return false;
+  if (mcp?.arguments_sha256 !== undefined &&
+      (typeof mcp.arguments_sha256 !== "string" || mcp.arguments_sha256 !== sha256(args ?? {}))) return false;
   return true;
 }
 
