@@ -1,6 +1,6 @@
 {
   "$schema":"https://json-schema.org/draft/2020-12/schema",
-  "$id":"https://github.com/mowdmd/trigger-protocol/blob/main/protocol/outcome.schema.json",
+  "$id":"https://trigger-protocol.org/schema/outcome.schema.json",
   "title":"Trigger Outcome",
   "type":"object",
   "required":["id","protocol","execution_id","status","observed_at"],
