@@ -2,7 +2,7 @@
 """Validate a Trigger Protocol v0.2 Trigger Receipt without external dependencies."""
 import json,sys
 from datetime import datetime,timezone
-REQUIRED=["id","protocol","proposal_id","decision_id","actor","authority_id","action","issued_at"]
+REQUIRED=["id","protocol","proposal_id","proposal_hash","decision_id","actor","authority_id","action","issued_at"]
 def error(message):
  print(f"INVALID: {message}",file=sys.stderr); raise SystemExit(1)
 def main():
