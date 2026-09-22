@@ -20,6 +20,8 @@ PROPOSE → REVIEW → DECIDE → TRIGGER → EXECUTE → OUTCOME
 
 The Trigger is the boundary. A Trigger Receipt is portable evidence of that authorization event.
 
+> **Implementation boundary:** the reference MCP gate does **not** dereference `decision_id` to prove that the Decision is `approve`, and it does **not** establish actor authority or delegation legitimacy. Those are deployment-side trust checks required for full execution conformance.
+
 The core semantic arc is:
 
 ```text
