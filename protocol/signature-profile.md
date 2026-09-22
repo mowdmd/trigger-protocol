@@ -59,3 +59,5 @@ Signatures do not prevent replay. Executors SHOULD enforce expires_at, SHOULD re
 ## Compatibility
 
 Unsigned trigger/0.2 receipts remain valid for experimental deployments. A deployment that requires cryptographic authorization MUST explicitly enable signature verification and MUST reject unsigned receipts. The v0.3 receipt schema carries the signature as an optional field; the v0.2 core does not require signature support.
+
+The v0.3 receipt schema also permits `scope` to be a string or a non-empty string array. This does not by itself define multi-tool invocation binding: the current MCP adapter still binds each invocation to one concrete `tool_name` and one `arguments_sha256`. An array scope therefore does not authorize multiple concrete invocations through the current adapter.
