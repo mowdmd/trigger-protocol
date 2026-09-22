@@ -142,19 +142,18 @@ function receiptAllows(receipt, toolName, args) {
   const hasScope =
     (typeof scope === "string" && scope.length > 0) ||
     (Array.isArray(scope) && scope.length > 0 && scope.every(item => typeof item === "string" && item.length > 0));
-  const hasToolBinding = typeof mcp?.tool_name === "string" && mcp.tool_name.length > 0;
-  if (!hasScope && !hasToolBinding) return false;
+  if (!hasScope) return false;
 
   if (typeof scope === "string" && scope !== "*" && scope !== toolName) return false;
-  if (Array.isArray(scope) && (!scope.includes("*") && !scope.includes(toolName))) return false;
-  if (scope !== undefined && !hasScope) return false;
+  if (Array.isArray(scope) && !scope.includes("*") && !scope.includes(toolName)) return false;
 
-  if (hasToolBinding && mcp.tool_name !== toolName) return false;
-  if (mcp?.arguments_sha256 && (
-    typeof mcp.arguments_sha256 !== "string" ||
-    !/^[0-9a-f]{64}$/.test(mcp.arguments_sha256) ||
-    mcp.arguments_sha256 !== sha256(args ?? {})
-  )) return false;
+  if (!mcp || typeof mcp !== "object" || Array.isArray(mcp)) return false;
+  if (typeof mcp.tool_name !== "string" || mcp.tool_name.length === 0) return false;
+  if (mcp.tool_name !== toolName) return false;
+
+  if (typeof mcp.arguments_sha256 !== "string" || !/^[0-9a-f]{64}$/.test(mcp.arguments_sha256)) return false;
+  if (mcp.arguments_sha256 !== sha256(args ?? {})) return false;
+
   return true;
 }
 
