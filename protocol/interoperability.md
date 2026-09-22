@@ -35,7 +35,7 @@ The envelope identifies the protocol and object type; it does not itself grant a
 
 ## Compatibility
 
-A v0.2 implementation MUST accept canonical core fields, reject structurally invalid records, preserve unknown extension fields when forwarding records, preserve object IDs and references, distinguish approval from all non-approval decisions, enforce trigger validity at execution time, and expose enough information to determine the authority, scope, constraints, and validity interval used for execution.
+A v0.2 implementation MUST accept canonical core fields, reject structurally invalid records, preserve unknown extension fields when forwarding records, preserve object IDs and references, distinguish approval from all non-approval decisions, enforce trigger validity at execution time, and expose enough information to determine the authority, scope, constraints, and validity interval used for execution. The core binding MUST preserve the proposal hash from Proposal through Decision into Trigger/Receipt; a Trigger MUST NOT authorize a materially different proposal or action merely because the decision ID is valid.
 
 Implementations MAY support additional protocol versions. They MUST NOT silently reinterpret a record from another version.
 
@@ -54,7 +54,7 @@ Example:
 
 Interoperability does not imply trust. A receiving executor MUST independently verify the authority and constraints relevant to its own execution context.
 
-Cryptographic signatures, identity federation, revocation registries, and transport authentication are profiles layered on the core protocol rather than assumptions of the semantic model.
+Cryptographic signatures, identity federation, revocation registries, and transport authentication are profiles layered on the core protocol rather than assumptions of the semantic model. The Ed25519 receipt profile is versioned separately as `0.3` and does not change `trigger/0.2` semantics.
 
 ## MCP adapter profile
 
