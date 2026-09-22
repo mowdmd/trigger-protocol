@@ -15,7 +15,6 @@ Options:
   --receipt <file>        Trigger Receipt JSON used by --mode gate
   --public-key <file>    Trusted Ed25519 public key for receipt signature verification
   --require-signature     Require and verify the receipt's Ed25519 signature
-  --tool <name>           In gate mode, allow this tool in addition to the receipt
   --help                  Show this help
 
 Examples:
@@ -29,7 +28,6 @@ function parseArgs(argv) {
   let receiptPath = null;
   let publicKeyPath = null;
   let requireSignature = false;
-  const allowedTools = [];
   let i = 0;
 
   for (; i < argv.length; i++) {
@@ -55,19 +53,13 @@ function parseArgs(argv) {
       requireSignature = true;
       continue;
     }
-    if (arg === "--tool") {
-      const tool = argv[++i];
-      if (!tool) throw new Error("--tool requires a tool name");
-      allowedTools.push(tool);
-      continue;
-    }
     throw new Error(`unknown option: ${arg}`);
   }
 
   const command = argv.slice(i);
   if (!command.length) throw new Error("missing upstream MCP server command; use -- <command> [args...]");
-  if (mode === "gate" && !receiptPath && !allowedTools.length) {
-    throw new Error("gate mode requires --receipt or at least one --tool");
+  if (mode === "gate" && !receiptPath) {
+    throw new Error("gate mode requires --receipt");
   }
   if (requireSignature && (!receiptPath || !publicKeyPath)) {
     throw new Error("--require-signature requires --receipt and --public-key");
@@ -191,9 +183,7 @@ export async function run(argv) {
     const toolName = message.params?.name;
     const args = message.params?.arguments ?? {};
     const receiptOk = receiptAllows(receipt, toolName, args);
-    const allowlisted = options.allowedTools.includes(toolName);
-
-    if (receiptOk || allowlisted) {
+    if (receiptOk) {
       logEvent("authorized", {
         protocol: receipt?.protocol ?? "trigger/0.2",
         request_id: message.id ?? null,
