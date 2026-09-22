@@ -40,9 +40,11 @@ The receipt must:
 - not be expired;
 - not be explicitly revoked;
 - use `action: "mcp.tools/call"`;
-- cover the requested tool through a valid non-empty `scope` (string or non-empty string array), or through the exact MCP `tool_name` extension;
-- satisfy optional exact tool-name binding;
-- satisfy optional exact-argument binding.
+- contain a valid non-empty `scope` (string or non-empty string array) that covers the requested tool;
+- contain the MCP extension with an exact non-empty `tool_name`;
+- contain `arguments_sha256` and match the canonical-JSON SHA-256 of the requested arguments.
+
+Malformed, missing, or mismatched bindings are rejected; they are never treated as absent optional checks.
 
 When signature enforcement is enabled, the proxy additionally verifies the experimental Ed25519 signature profile and the configured trusted public key. Signature verification authenticates receipt integrity; it does not establish authority by itself.
 
@@ -56,11 +58,13 @@ The proxy does not mint, infer, or broaden authority.
 
 A receipt says which proposal, proposal hash, decision, actor, authority, action, and scope are being presented at the execution boundary. The deployment still needs a trust layer capable of establishing that those references are legitimate.
 
-Today the package is intentionally conservative about this distinction: it validates the receipt artifact locally, but does not pretend that local JSON parsing or signature verification proves real-world identity or institutional legitimacy.
+The proxy validates the receipt artifact and invocation binding locally. It does **not** dereference `decision_id` to prove that the referenced Decision has `decision: "approve"`, nor does it independently establish that the actor held the referenced authority. Those checks remain deployment trust-layer responsibilities, as required by the core specification.
+
+Consequently, gate mode should be understood as a **receipt and invocation enforcement point**, not a universal identity or governance verifier.
 
 ## Exact invocation binding
 
-For consequential tools, bind the receipt to the exact tool and arguments:
+For consequential tools, the MCP adapter requires the receipt to bind to the exact tool and arguments:
 
 ```json
 {
@@ -91,7 +95,7 @@ npx trigger-mcp-proxy \
   -- node ./examples/mcp-demo-server.mjs
 ```
 
-The included demo server exposes a harmless `hello` tool. The example receipt authorizes only that tool.
+The included demo server exposes a harmless `hello` tool. The example receipt authorizes exactly `hello` with the demo invocation arguments.
 
 The optional `nonce` field is an identifier carried by the receipt; this adapter does not treat it as a replay counter or consume it. Replay prevention across repeated requests or process restarts remains a deployment responsibility, consistent with the threat model.
 
@@ -99,9 +103,9 @@ The optional `nonce` field is an identifier carried by the receipt; this adapter
 
 The proxy answers one narrow question:
 
-> Was this concrete MCP action presented with a valid Trigger Receipt before it reached the upstream server?
+> Was this concrete MCP action presented with a structurally valid Trigger Receipt whose scope, exact tool, and exact arguments cover this invocation before it reached the upstream server?
 
-It does not independently resolve whether the referenced proposal hash matches a separately stored proposal or whether the named actor truly held the authority; those remain deployment trust-layer checks.
+It does not independently resolve whether the referenced proposal hash matches a separately stored proposal, whether the referenced Decision was actually an approval, or whether the named actor truly held the authority; those remain deployment trust-layer checks.
 
 It does not answer:
 
