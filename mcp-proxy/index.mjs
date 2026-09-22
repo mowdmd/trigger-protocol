@@ -107,7 +107,7 @@ function verifyReceiptSignature(receipt, publicKeyPath) {
 
 function loadReceipt(path, publicKeyPath, requireSignature) {
   const receipt = JSON.parse(readFileSync(path, "utf8"));
-  const required = ["id", "protocol", "proposal_id", "decision_id", "actor", "authority_id", "action", "issued_at"];
+  const required = ["id", "protocol", "proposal_id", "proposal_hash", "decision_id", "actor", "authority_id", "action", "issued_at"];
   for (const key of required) if (receipt[key] === undefined) throw new Error(`receipt missing ${key}`);
   if (!["trigger/0.2", "trigger/0.3"].includes(receipt.protocol)) throw new Error("unsupported receipt protocol");
   if (receipt.expires_at && Date.parse(receipt.expires_at) <= Date.now()) throw new Error("receipt is expired");
