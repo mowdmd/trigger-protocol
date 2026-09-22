@@ -95,6 +95,18 @@ try {
   assert.match(blocked.out, /Trigger Protocol authorization required/);
   assert.match(blocked.err, /"event":"blocked"/);
 
+  // trigger/0.2 defines scope as a string; array scope is a v0.3 profile shape.
+  const arrayScopeV02 = { ...baseReceipt, scope: ["hello"] };
+  const arrayScopeV02Path = new URL("./array-scope-v02.json", `file://${tempDir}/`).pathname;
+  writeFileSync(arrayScopeV02Path, JSON.stringify(arrayScopeV02));
+  const blockedArrayScopeV02 = await runGate(arrayScopeV02Path, {
+    jsonrpc: "2.0",
+    id: 10,
+    method: "tools/call",
+    params: { name: "hello", arguments: { name: "Trigger" } }
+  });
+  assert.match(blockedArrayScopeV02.out, /Trigger Protocol authorization required/);
+
   const invalidScope = { ...baseReceipt, scope: { tool: "hello" } };
   const invalidScopePath = new URL("./invalid-scope.json", `file://${tempDir}/`).pathname;
   writeFileSync(invalidScopePath, JSON.stringify(invalidScope));
