@@ -1,15 +1,10 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { spawn } from "node:child_process";
-
-function canonicalJson(value) {
-  if (value === null || typeof value !== "object") return JSON.stringify(value);
-  if (Array.isArray(value)) return "[" + value.map(canonicalJson).join(",") + "]";
-  return "{" + Object.keys(value).sort().map(k => JSON.stringify(k) + ":" + canonicalJson(value[k])).join(",") + "}";
-}
+import { canonicalJsonSha256 } from "../protocol/canonical-json.mjs";
 
 function hash(value) {
-  return createHash("sha256").update(canonicalJson(value)).digest("hex");
+  return canonicalJsonSha256(value, createHash);
 }
 
 const args = { path: "/tmp/example.txt", recursive: false };
