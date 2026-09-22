@@ -1,6 +1,6 @@
 {
   "$schema":"https://json-schema.org/draft/2020-12/schema",
-  "$id":"https://github.com/mowdmd/trigger-protocol/blob/main/protocol/decision.schema.json",
+  "$id":"https://trigger-protocol.org/schema/decision.schema.json",
   "title":"Trigger Decision Record",
   "type":"object",
   "required":["id","protocol","proposal_id","proposal_hash","actor","authority_id","decision","issued_at"],
