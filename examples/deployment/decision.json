@@ -1,6 +1,0 @@
-{
-  "protocol":"trigger/0.1",
-  "proposal":{"id":"deploy-001","agent":"release-agent","action":"deploy","scope":"production","risk":"high","reversibility":"reversible","evidence":["tests-982","canary-44"]},
-  "authorization":{"decision":"approve","actor":"human:oncall","authority":"production-release","reason":"Canary metrics meet release policy.","timestamp":"2026-01-01T11:00:00Z"},
-  "execution":{"executor":"deployment-system","status":"completed","action":"deploy"}
-}
