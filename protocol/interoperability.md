@@ -65,11 +65,18 @@ The adapter is intentionally asymmetric: the upstream MCP server remains the exe
 
 ## Proposal hash canonicalization
 
-The semantic core uses SHA-256 for `proposal_hash`. The hashed representation is canonical JSON encoded as UTF-8:
+The semantic core uses SHA-256 for `proposal_hash`. The hashed representation is **RFC 8785 JSON Canonicalization Scheme (JCS)** encoded as UTF-8.
 
-- object keys are sorted lexicographically;
+The canonicalization rules are:
+
+- object keys are sorted by their UTF-16 code-unit order, matching ECMAScript;
 - array order is preserved;
-- strings, numbers, booleans, and null use standard JSON representations;
+- strings, booleans, and null use JSON serialization;
+- numbers use ECMAScript JSON number serialization, including its decimal/scientific notation thresholds and normalization of negative zero;
+- non-finite numbers are not valid JSON;
+- integers outside the I-JSON safe integer range MUST be rejected;
 - insignificant whitespace is omitted.
 
-This is the same deterministic representation used by the reference conformance implementation. Implementations MUST hash canonical content rather than a transport-specific serialization.
+The repository's JavaScript implementation is shared at `protocol/canonical-json.mjs`; the Python conformance implementation is `protocol/canonical_json.py`. Independent implementations MUST produce the same canonical UTF-8 bytes and therefore the same SHA-256 digest. Conformance vectors include `0.0`, `1.0`, decimal/scientific thresholds, negative zero, and key ordering.
+
+Implementations MUST hash canonical content rather than a transport-specific serialization.
