@@ -38,7 +38,9 @@ An executor MUST:
 5. verify the signature;
 6. continue with the ordinary Trigger authorization checks.
 
-A valid signature proves possession of the corresponding private key. It does not by itself prove that the key holder was entitled to authorize the action. Authority remains independent.
+A valid signature proves possession of the corresponding private key. It does not by itself prove that the key holder was entitled to authorize the action, that the referenced Decision was `approve`, or that the surrounding governance process was legitimate. Authority and Decision validation remain independent.
+
+The verifier MUST NOT treat a valid signature as a substitute for authority, Decision approval, delegation validation, or revocation checks.
 
 ## Key distribution
 
@@ -52,8 +54,8 @@ Only Ed25519 is defined by this profile. Implementations MUST reject unknown alg
 
 ## Replay
 
-Signatures do not prevent replay. Executors SHOULD enforce expires_at, SHOULD require nonce for high-impact actions, and SHOULD maintain replay state when an action must execute at most once.
+Signatures do not prevent replay. Executors SHOULD enforce expires_at, SHOULD require nonce for high-impact actions, and SHOULD maintain replay state when an action must execute at most once. Replay state and nonce semantics are deployment/profile concerns in v0.2/v0.3 and are not implied merely by the presence of a nonce field.
 
 ## Compatibility
 
-Unsigned trigger/0.2 receipts remain valid for experimental deployments. A deployment that requires cryptographic authorization MUST explicitly enable signature verification and MUST reject unsigned receipts.
+Unsigned trigger/0.2 receipts remain valid for experimental deployments. A deployment that requires cryptographic authorization MUST explicitly enable signature verification and MUST reject unsigned receipts. The v0.3 receipt schema carries the signature as an optional field; the v0.2 core does not require signature support.
