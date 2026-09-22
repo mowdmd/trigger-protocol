@@ -181,7 +181,7 @@ try {
   assert.notEqual(futureExit, 0);
   assert.match(futureErr, /issued_at is in the future/);
 
-  const badExpiry = { ...baseReceipt, expires_at: "2025-01-01T00:00:00Z" };
+  const badExpiry = { ...baseReceipt, expires_at: "2026-06-01T00:00:00Z" };
   const badExpiryPath = new URL("./bad-expiry.json", `file://${tempDir}/`).pathname;
   writeFileSync(badExpiryPath, JSON.stringify(badExpiry));
   const expiry = spawn(process.execPath, [
