@@ -1,6 +1,0 @@
-{
-  "protocol":"trigger/0.1",
-  "proposal":{"id":"research-001","agent":"research-agent","action":"run_experiment","scope":"lab:A","risk":"medium","reversibility":"partial","evidence":["literature-12","simulation-04"],"alternatives":["run_smaller_experiment","defer"]},
-  "authorization":{"decision":"approve","actor":"human:researcher","authority":"experiment-approval","reason":"Expected information gain justifies bounded cost.","timestamp":"2026-01-01T09:00:00Z"},
-  "execution":{"executor":"lab-system","status":"completed","action":"run_experiment"}
-}
