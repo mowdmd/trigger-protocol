@@ -119,6 +119,9 @@ function loadReceipt(path, publicKeyPath, requireSignature) {
     if (expiresAt <= Date.now()) throw new Error("receipt is expired");
   }
 
+  if (receipt.revoked !== undefined && typeof receipt.revoked !== "boolean") {
+    throw new Error("invalid revoked");
+  }
   if (receipt.revoked === true) throw new Error("receipt is revoked");
 
   if (requireSignature) {
