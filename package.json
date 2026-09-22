@@ -8,7 +8,8 @@
     "trigger-receipt": "./bin/trigger-receipt.mjs"
   },
   "scripts": {
-    "test": "node mcp-proxy/test.mjs && node mcp-proxy/test-signature.mjs"
+    "test": "npm run test:schema && node mcp-proxy/test.mjs && node mcp-proxy/test-signature.mjs",
+    "test:schema": "node mcp-proxy/test-schema.mjs"
   },
   "engines": {
     "node": ">=18"
