@@ -40,7 +40,7 @@ The receipt must:
 - not be expired;
 - not be explicitly revoked;
 - use `action: "mcp.tools/call"`;
-- cover the requested tool through `scope`;
+- cover the requested tool through a valid non-empty `scope` (string or non-empty string array), or through the exact MCP `tool_name` extension;
 - satisfy optional exact tool-name binding;
 - satisfy optional exact-argument binding.
 
@@ -92,6 +92,8 @@ npx trigger-mcp-proxy \
 ```
 
 The included demo server exposes a harmless `hello` tool. The example receipt authorizes only that tool.
+
+The optional `nonce` field is an identifier carried by the receipt; this adapter does not treat it as a replay counter or consume it. Replay prevention across repeated requests or process restarts remains a deployment responsibility, consistent with the threat model.
 
 ## Security boundary
 
