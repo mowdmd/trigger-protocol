@@ -224,7 +224,7 @@ The npm package `trigger-mcp-proxy` is intentionally small:
 - diagnostics on stderr;
 - no shell interpolation of the upstream command;
 - receipt-gated `tools/call`;
-- optional exact-argument binding with SHA-256;
+- exact tool/argument binding with SHA-256;
 - no authority minting inside the proxy.
 
 For consequential actions, bind the receipt to the exact invocation:
