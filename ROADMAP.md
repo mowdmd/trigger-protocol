@@ -22,7 +22,7 @@
 - [x] One-command `npx trigger-mcp-proxy` entry point
 - [x] Transparent observe mode
 - [x] Receipt-gated `tools/call` enforcement mode
-- [x] Optional exact-argument binding via SHA-256
+- [x] Exact tool/argument binding via SHA-256
 - [x] Runnable local demo
 - [x] npm package metadata and test command
 - [x] npm trusted-publishing workflow
