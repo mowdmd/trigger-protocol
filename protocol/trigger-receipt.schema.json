@@ -1,20 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://trigger-protocol.org/schema/trigger-receipt-0.2.json",
+  "$id": "https://trigger-protocol.org/schema/trigger-receipt.schema.json",
   "title": "Trigger Receipt v0.2",
-  "description": "Portable authorization record for a bounded action in the Trigger Protocol 0.2 semantic core.",
+  "description": "Portable evidence of a Trigger authorization event in the Trigger Protocol 0.2 semantic core.",
   "type": "object",
-  "required": [
-    "id",
-    "protocol",
-    "proposal_id",
-    "decision_id",
-    "proposal_hash",
-    "actor",
-    "authority_id",
-    "action",
-    "issued_at"
-  ],
+  "required": ["id", "protocol", "proposal_id", "decision_id", "proposal_hash", "actor", "authority_id", "action", "issued_at"],
   "properties": {
     "id": {"type": "string", "minLength": 1},
     "protocol": {"const": "trigger/0.2"},
