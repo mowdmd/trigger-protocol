@@ -107,6 +107,64 @@ try {
   assert.equal(blockedType.exitCode, 0, blockedType.err);
   assert.match(blockedType.out, /Trigger Protocol authorization required/);
 
+  const missingToolBinding = { ...baseReceipt, extensions: {} };
+  const missingToolBindingPath = new URL("./missing-tool-binding.json", `file://${tempDir}/`).pathname;
+  writeFileSync(missingToolBindingPath, JSON.stringify(missingToolBinding));
+  const blockedMissingToolBinding = await runGate(missingToolBindingPath, {
+    jsonrpc: "2.0",
+    id: 4,
+    method: "tools/call",
+    params: { name: "hello", arguments: { name: "Trigger" } }
+  });
+  assert.match(blockedMissingToolBinding.out, /Trigger Protocol authorization required/);
+
+  const malformedToolBinding = {
+    ...baseReceipt,
+    extensions: { "https://trigger-protocol.org/ns/mcp-proxy": { tool_name: 123, arguments_sha256: baseReceipt.extensions["https://trigger-protocol.org/ns/mcp-proxy"].arguments_sha256 } }
+  };
+  const malformedToolBindingPath = new URL("./malformed-tool-binding.json", `file://${tempDir}/`).pathname;
+  writeFileSync(malformedToolBindingPath, JSON.stringify(malformedToolBinding));
+  const blockedMalformedToolBinding = await runGate(malformedToolBindingPath, {
+    jsonrpc: "2.0",
+    id: 5,
+    method: "tools/call",
+    params: { name: "hello", arguments: { name: "Trigger" } }
+  });
+  assert.match(blockedMalformedToolBinding.out, /Trigger Protocol authorization required/);
+
+  const missingArgumentBinding = {
+    ...baseReceipt,
+    extensions: { "https://trigger-protocol.org/ns/mcp-proxy": { tool_name: "hello" } }
+  };
+  const missingArgumentBindingPath = new URL("./missing-argument-binding.json", `file://${tempDir}/`).pathname;
+  writeFileSync(missingArgumentBindingPath, JSON.stringify(missingArgumentBinding));
+  const blockedMissingArgumentBinding = await runGate(missingArgumentBindingPath, {
+    jsonrpc: "2.0",
+    id: 6,
+    method: "tools/call",
+    params: { name: "hello", arguments: { name: "Trigger" } }
+  });
+  assert.match(blockedMissingArgumentBinding.out, /Trigger Protocol authorization required/);
+
+  const wrongArguments = {
+    ...baseReceipt,
+    extensions: {
+      "https://trigger-protocol.org/ns/mcp-proxy": {
+        ...baseReceipt.extensions["https://trigger-protocol.org/ns/mcp-proxy"],
+        arguments_sha256: hash({ name: "Other" })
+      }
+    }
+  };
+  const wrongArgumentsPath = new URL("./wrong-arguments.json", `file://${tempDir}/`).pathname;
+  writeFileSync(wrongArgumentsPath, JSON.stringify(wrongArguments));
+  const blockedWrongArguments = await runGate(wrongArgumentsPath, {
+    jsonrpc: "2.0",
+    id: 7,
+    method: "tools/call",
+    params: { name: "hello", arguments: { name: "Trigger" } }
+  });
+  assert.match(blockedWrongArguments.out, /Trigger Protocol authorization required/);
+
   const futureReceipt = { ...baseReceipt, issued_at: "2099-01-01T00:00:00Z" };
   const futurePath = new URL("./future.json", `file://${tempDir}/`).pathname;
   writeFileSync(futurePath, JSON.stringify(futureReceipt));
