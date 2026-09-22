@@ -33,7 +33,7 @@ proposal
 
 The proxy verifies the receipt at the last possible boundary before the side effect reaches the MCP server.
 
-For the MCP adapter, the receipt MUST bind all three of:
+For the MCP adapter, the receipt MUST bind all of the following:
 
 - `action: "mcp.tools/call"`;
 - a non-empty `scope` covering the requested tool;
