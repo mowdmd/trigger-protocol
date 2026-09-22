@@ -42,7 +42,7 @@ A Decision Record MUST include:
 - one decision value: `approve`, `reject`, `modify`, `defer`, or `request_second_opinion`;
 - `issued_at`.
 
-The `proposal_hash` is an opaque content hash of the canonical proposal representation. The protocol does not mandate a particular hashing algorithm beyond requiring that implementations agree on the representation used for verification.
+The `proposal_hash` is a SHA-256 content hash of the canonical proposal representation. Canonical JSON uses UTF-8, lexicographically sorted object keys, preserved array order, standard JSON primitive representations, and no insignificant whitespace. Implementations MUST hash the exact canonical bytes; they MUST NOT hash a pretty-printed or transport-specific representation.
 
 Only `approve` can lead to a Trigger. `reject`, `modify`, `defer`, and `request_second_opinion` MUST NOT be interpreted as execution authorization.
 
