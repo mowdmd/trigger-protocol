@@ -95,9 +95,30 @@ function verifyReceiptSignature(receipt, publicKeyPath) {
 function loadReceipt(path, publicKeyPath, requireSignature) {
   const receipt = JSON.parse(readFileSync(path, "utf8"));
   const required = ["id", "protocol", "proposal_id", "proposal_hash", "decision_id", "actor", "authority_id", "action", "issued_at"];
-  for (const key of required) if (receipt[key] === undefined) throw new Error(`receipt missing ${key}`);
+  for (const key of required) {
+    if (typeof receipt[key] !== "string" || receipt[key].length === 0) {
+      throw new Error(`receipt missing or empty ${key}`);
+    }
+  }
   if (!["trigger/0.2", "trigger/0.3"].includes(receipt.protocol)) throw new Error("unsupported receipt protocol");
-  if (receipt.expires_at && Date.parse(receipt.expires_at) <= Date.now()) throw new Error("receipt is expired");
+  if (!/^sha256:[0-9a-f]{64}$/.test(receipt.proposal_hash)) {
+    throw new Error("invalid proposal_hash");
+  }
+
+  const issuedAt = Date.parse(receipt.issued_at);
+  if (!Number.isFinite(issuedAt)) throw new Error("invalid issued_at");
+  if (issuedAt > Date.now()) throw new Error("receipt issued_at is in the future");
+
+  if (receipt.expires_at !== undefined) {
+    if (typeof receipt.expires_at !== "string" || receipt.expires_at.length === 0) {
+      throw new Error("invalid expires_at");
+    }
+    const expiresAt = Date.parse(receipt.expires_at);
+    if (!Number.isFinite(expiresAt)) throw new Error("invalid expires_at");
+    if (expiresAt <= issuedAt) throw new Error("expires_at must be after issued_at");
+    if (expiresAt <= Date.now()) throw new Error("receipt is expired");
+  }
+
   if (receipt.revoked === true) throw new Error("receipt is revoked");
 
   if (requireSignature) {
@@ -116,12 +137,24 @@ function receiptAllows(receipt, toolName, args) {
   if (receipt.action !== "mcp.tools/call") return false;
 
   const scope = receipt.scope;
-  if (typeof scope === "string" && scope !== "*" && scope !== toolName) return false;
-  if (Array.isArray(scope) && !scope.includes("*") && !scope.includes(toolName)) return false;
-
   const mcp = receipt.extensions?.[NS];
-  if (mcp?.tool_name && mcp.tool_name !== toolName) return false;
-  if (mcp?.arguments_sha256 && mcp.arguments_sha256 !== sha256(args ?? {})) return false;
+
+  const hasScope =
+    (typeof scope === "string" && scope.length > 0) ||
+    (Array.isArray(scope) && scope.length > 0 && scope.every(item => typeof item === "string" && item.length > 0));
+  const hasToolBinding = typeof mcp?.tool_name === "string" && mcp.tool_name.length > 0;
+  if (!hasScope && !hasToolBinding) return false;
+
+  if (typeof scope === "string" && scope !== "*" && scope !== toolName) return false;
+  if (Array.isArray(scope) && (!scope.includes("*") && !scope.includes(toolName))) return false;
+  if (scope !== undefined && !hasScope) return false;
+
+  if (hasToolBinding && mcp.tool_name !== toolName) return false;
+  if (mcp?.arguments_sha256 && (
+    typeof mcp.arguments_sha256 !== "string" ||
+    !/^[0-9a-f]{64}$/.test(mcp.arguments_sha256) ||
+    mcp.arguments_sha256 !== sha256(args ?? {})
+  )) return false;
   return true;
 }
 
