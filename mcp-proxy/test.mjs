@@ -1,10 +1,16 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { spawn } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { canonicalJsonSha256 } from "../protocol/canonical-json.mjs";
 
 function hash(value) {
   return canonicalJsonSha256(value, createHash);
+}
+
+const canonicalVectors = JSON.parse(readFileSync(new URL("../conformance/canonical-vectors.json", import.meta.url), "utf8"));
+for (const vector of canonicalVectors.vectors) {
+  assert.equal(canonicalJsonSha256(vector.value, createHash), vector.sha256, vector.name);
 }
 
 const args = { path: "/tmp/example.txt", recursive: false };
