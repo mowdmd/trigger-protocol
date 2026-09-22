@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { spawn } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { canonicalJsonSha256 } from "../protocol/canonical-json.mjs";
 
 function hash(value) {
@@ -93,6 +95,30 @@ const destructiveReceipt = new URL("../examples/destructive-action/receipt.json"
   assert.match(result.stdout, /-32001/);
   assert.doesNotMatch(result.stdout, /reached the executor/);
   assert.match(result.stderr, /"event":"blocked"/);
+}
+
+{
+  const dir = mkdtempSync(join(tmpdir(), "trigger-mcp-proxy-"));
+  try {
+    const unscoped = join(dir, "receipt.json");
+    const value = JSON.parse(readFileSync(receipt, "utf8"));
+    delete value.scope;
+    writeFileSync(unscoped, JSON.stringify(value));
+
+    const result = await runProxy(new URL("file://" + unscoped), demo, {
+      jsonrpc: "2.0",
+      id: 4,
+      method: "tools/call",
+      params: { name: "hello", arguments: { name: "Trigger" } }
+    });
+
+    assert.equal(result.exitCode, 0, result.stderr);
+    assert.match(result.stdout, /-32001/);
+    assert.doesNotMatch(result.stdout, /"Hello, Trigger\\."/);
+    assert.match(result.stderr, /"event":"blocked"/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 }
 
 console.log("mcp-proxy tests: PASS");
