@@ -144,7 +144,7 @@ function receiptAllows(receipt, toolName, args) {
 
   const hasScope =
     (typeof scope === "string" && scope.length > 0) ||
-    (Array.isArray(scope) && scope.length > 0 && scope.every(item => typeof item === "string" && item.length > 0));
+    (receipt.protocol === "trigger/0.3" && Array.isArray(scope) && scope.length > 0 && scope.every(item => typeof item === "string" && item.length > 0));
   if (!hasScope) return false;
 
   if (typeof scope === "string" && scope !== "*" && scope !== toolName) return false;
