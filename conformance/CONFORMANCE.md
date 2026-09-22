@@ -1,16 +1,21 @@
-# Trigger Protocol Conformance v0.1
+# Trigger Protocol Conformance v0.2
 
-An implementation claiming Trigger Protocol v0.1 compatibility should distinguish semantic validation from deployment-specific policy enforcement.
+A conforming `trigger/0.2` implementation MUST preserve the semantic boundary between Proposal, Decision, Trigger, and Execution.
 
-## Implemented by the reference runner
+## Reference checks
 
-1. Accept a structurally valid Trigger Receipt.
-2. Reject a receipt missing a required field.
-3. Reject a non-approve decision as an execution authorization.
-4. Reject an unsupported protocol version.
-5. Reject an expired receipt.
-6. Reject a receipt issued in the future.
-7. Reject an invalid expiry relationship.
+The reference conformance suite checks:
+
+1. required Trigger Receipt fields;
+2. `trigger/0.2` protocol identity;
+3. proposal-hash presence and continuity;
+4. issuance and expiry validity;
+5. Proposal → Decision → Trigger linkage;
+6. actor and authority continuity from Decision to Trigger;
+7. action/resource/scope continuity from Proposal to Trigger;
+8. mutation of an approved Proposal breaks the authorization binding;
+9. `reject`, `modify`, `defer`, and `request_second_opinion` are not execution authorization;
+10. a later approval does not erase or rewrite an earlier blocking Decision Record.
 
 Run:
 
@@ -18,18 +23,38 @@ Run:
 python conformance/test_conformance.py
 ```
 
-## Required implementation semantics
+The repository also runs JSON-schema sanity checks and the MCP adapter tests through:
 
-A conforming implementation MUST also enforce, at execution time:
+```bash
+npm test
+```
 
-- the actor has the referenced authority;
-- the authority covers the requested action and scope;
-- delegated authority is valid and not revoked;
-- the authorization is valid at the time of execution;
-- the receipt identifier is preserved in execution/audit records.
+## Required execution semantics
 
-These checks depend on the implementation's authority and delegation model and are therefore not yet encoded in the minimal fixture runner.
+A conforming executor MUST independently verify, before a consequential action:
 
-## Not yet standardized
+- the referenced Decision is `approve`;
+- the actor holds or validly derives the referenced authority;
+- authority covers the action and resource/scope;
+- delegation, if present, is valid and not revoked;
+- the Trigger is within its validity interval;
+- constraints are satisfied;
+- the referenced Proposal hash matches the Proposal being executed;
+- the Trigger action/resource/scope/constraints match the approved Proposal;
+- the Trigger actor and authority match the approving Decision.
 
-Cryptographic signatures, identity binding, revocation registries, and interoperable authority-discovery mechanisms are intentionally deferred from v0.1.
+An executor MUST block execution when these checks fail.
+
+## Proposal hash
+
+`proposal_hash` is SHA-256 over the canonical JSON representation of the Proposal. Canonical JSON uses UTF-8, lexicographically sorted object keys, preserved array order, standard JSON primitive representations, and no insignificant whitespace.
+
+## Negative space
+
+Blocking decisions are durable history. A later approval is a new Decision Record and MUST NOT mutate, erase, or reinterpret the earlier Decision.
+
+## Trust-layer profiles
+
+The Ed25519 receipt signature profile is versioned separately as `0.3`. It authenticates receipt integrity but does not establish authority, identity legitimacy, or organizational governance.
+
+Identity binding, authority graphs, revocation registries, replay state, and other deployment trust mechanisms remain outside the minimal semantic core unless standardized by a future profile.
