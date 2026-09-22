@@ -22,7 +22,6 @@ This document defines the canonical vocabulary. Implementations MAY add extensio
 | Delegation | A bounded transfer of authority from grantor to grantee | How authority is derived |
 | Trigger | The explicit authorization event that permits execution | Boundary crossing |
 | Receipt | Portable machine-readable evidence of a Trigger | Interoperability artifact |
-| Receipt | Portable machine-readable evidence of a trigger | Interoperability artifact |
 | Execution | The actual attempt to perform the authorized action | Side effect |
 | Outcome | Observation of what resulted from execution | Consequence |
 | Evidence | Material used to support review or authorization | Decision basis |
