@@ -78,16 +78,6 @@ For consequential tools, bind the receipt to the exact tool and arguments:
 
 Arguments are hashed from canonical JSON with object keys sorted recursively.
 
-## Local allowlist
-
-A local allowlist is available for development:
-
-```bash
-npx trigger-mcp-proxy --mode gate --tool read_file -- npx -y <your-mcp-server>
-```
-
-This is explicitly **not** a Trigger Protocol authority artifact. It is a local configuration escape hatch and should not be presented as portable authorization.
-
 ## One-minute demo
 
 From the repository root:
