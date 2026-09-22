@@ -3,6 +3,8 @@
 Version: 0.2
 Status: Experimental
 
+The semantic core is versioned independently from the optional `0.3` Ed25519 receipt signature profile.
+
 This document defines the canonical vocabulary. Implementations MAY add extension fields, but MUST preserve the semantics of the core terms.
 
 ## Core primitives
@@ -19,6 +21,7 @@ This document defines the canonical vocabulary. Implementations MAY add extensio
 | Authority | A bounded grant permitting an actor to authorize a class of actions | Why the actor may authorize |
 | Delegation | A bounded transfer of authority from grantor to grantee | How authority is derived |
 | Trigger | The explicit authorization event that permits execution | Boundary crossing |
+| Receipt | Portable machine-readable evidence of a Trigger | Interoperability artifact |
 | Receipt | Portable machine-readable evidence of a trigger | Interoperability artifact |
 | Execution | The actual attempt to perform the authorized action | Side effect |
 | Outcome | Observation of what resulted from execution | Consequence |
