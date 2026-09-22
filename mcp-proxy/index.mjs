@@ -92,6 +92,9 @@ function verifyReceiptSignature(receipt, publicKeyPath) {
 
 function parseDate(value, field) {
   if (typeof value !== "string" || !value) throw new Error(`receipt ${field} must be a date-time string`);
+  if (!/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$/.test(value)) {
+    throw new Error(`receipt ${field} is invalid`);
+  }
   const timestamp = Date.parse(value);
   if (!Number.isFinite(timestamp)) throw new Error(`receipt ${field} is invalid`);
   return timestamp;
