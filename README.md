@@ -96,7 +96,7 @@ A Trigger Receipt is the portable authorization artifact presented to an executo
 
 A receipt is **evidence of an authorization event, not a source of authority by itself**. In a real deployment, the executor also needs a way to establish that the actor held the stated authority and that the referenced decision was actually approved.
 
-**A valid Trigger proves that a particular execution was authorized within the protocol's stated boundary; it does not prove that the surrounding workflow, authority system, or human decision process was itself legitimate.**
+**A valid Trigger represents a particular execution authorization within the protocol's stated boundary; it does not by itself prove that the surrounding workflow, authority system, or human decision process was itself legitimate.**
 
 The distinction is fundamental:
 
