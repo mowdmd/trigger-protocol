@@ -1,0 +1,47 @@
+{
+  "version": "jcs-1",
+  "vectors": [
+    {
+      "name": "integer-valued float",
+      "value": {"amount": 100.0},
+      "canonical": "{\"amount\":100}",
+      "sha256": "4d4bbe59c6aad22442cde199a6a8a5f034405fcd78fb5a81c24ef249de1c45f1"
+    },
+    {
+      "name": "uncertainty lower boundary",
+      "value": {"uncertainty": 0.0},
+      "canonical": "{\"uncertainty\":0}",
+      "sha256": "e64caf71d039f1bd5c8c968bd48cf99aca4f991004d09eb9f0aa50641da4bcaa"
+    },
+    {
+      "name": "uncertainty upper boundary",
+      "value": {"uncertainty": 1.0},
+      "canonical": "{\"uncertainty\":1}",
+      "sha256": "7867079f8a4fff68b7a842b17185336c5453d691f0184207d83e5958c503a299"
+    },
+    {
+      "name": "decimal threshold",
+      "value": {"amount": 0.000001},
+      "canonical": "{\"amount\":0.000001}",
+      "sha256": "ee27944490d1937ee5bc69812925a9534f0314bb6eaee6f822327e33d7b9a43a"
+    },
+    {
+      "name": "scientific threshold",
+      "value": {"amount": 0.0000001},
+      "canonical": "{\"amount\":1e-7}",
+      "sha256": "297c691158314cae6f4a390249e98e43613631398a7b4118bde9252fd87c8b4f"
+    },
+    {
+      "name": "negative zero",
+      "value": {"amount": -0.0},
+      "canonical": "{\"amount\":0}",
+      "sha256": "e6a312b1d452aa705e11d045f19ba9f7097fbbc3a7ef956573c98e6d81203b6a"
+    },
+    {
+      "name": "lexicographic object keys",
+      "value": {"b": "x", "a": "y"},
+      "canonical": "{\"a\":\"y\",\"b\":\"x\"}",
+      "sha256": "7951deff61d4304af5863a13c2ef570ffc96f1d8df5fb3214743dc9953b8aeea"
+    }
+  ]
+}
