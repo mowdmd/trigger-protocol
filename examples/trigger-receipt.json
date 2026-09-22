@@ -2,6 +2,7 @@
   "id":"tr-demo-001",
   "protocol":"trigger/0.2",
   "proposal_id":"deploy-001",
+  "proposal_hash":"sha256:1111111111111111111111111111111111111111111111111111111111111111",
   "decision_id":"decision-001",
   "actor":"human:oncall",
   "authority_id":"production-release",
