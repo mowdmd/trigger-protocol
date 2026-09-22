@@ -8,6 +8,31 @@ function hash(value) {
   return canonicalJsonSha256(value, createHash);
 }
 
+async function runProxy(receipt, server, message) {
+  const child = spawn(process.execPath, [
+    proxy.pathname,
+    "--mode", "gate",
+    "--receipt", receipt.pathname,
+    "--",
+    process.execPath, server.pathname
+  ], { stdio: ["pipe", "pipe", "pipe"] });
+
+  let stdout = "";
+  let stderr = "";
+  child.stdout.on("data", chunk => { stdout += chunk; });
+  child.stderr.on("data", chunk => { stderr += chunk; });
+
+  child.stdin.write(JSON.stringify(message) + "\n");
+  child.stdin.end();
+
+  const exitCode = await new Promise((resolve, reject) => {
+    child.once("error", reject);
+    child.once("exit", code => resolve(code));
+  });
+
+  return { exitCode, stdout, stderr };
+}
+
 const canonicalVectors = JSON.parse(readFileSync(new URL("../conformance/canonical-vectors.json", import.meta.url), "utf8"));
 for (const vector of canonicalVectors.vectors) {
   assert.equal(canonicalJsonSha256(vector.value, createHash), vector.sha256, vector.name);
@@ -21,34 +46,53 @@ const proxy = new URL("../bin/trigger-mcp-proxy.mjs", import.meta.url);
 const demo = new URL("../examples/mcp-demo-server.mjs", import.meta.url);
 const receipt = new URL("../examples/mcp-demo-receipt.json", import.meta.url);
 
-const child = spawn(process.execPath, [
-  proxy.pathname,
-  "--mode", "gate",
-  "--receipt", receipt.pathname,
-  "--",
-  process.execPath, demo.pathname
-], { stdio: ["pipe", "pipe", "pipe"] });
+{
+  const result = await runProxy(receipt, demo, {
+    jsonrpc: "2.0",
+    id: 1,
+    method: "tools/call",
+    params: { name: "hello", arguments: { name: "Trigger" } }
+  });
 
-let stdout = "";
-let stderr = "";
-child.stdout.on("data", chunk => { stdout += chunk; });
-child.stderr.on("data", chunk => { stderr += chunk; });
+  assert.equal(result.exitCode, 0, result.stderr);
+  assert.match(result.stdout, /"Hello, Trigger\."/);
+  assert.match(result.stderr, /"event":"authorized"/);
+}
 
-child.stdin.write(JSON.stringify({
-  jsonrpc: "2.0",
-  id: 1,
-  method: "tools/call",
-  params: { name: "hello", arguments: { name: "Trigger" } }
-}) + "\n");
+const destructive = new URL("../examples/destructive-action/server.mjs", import.meta.url);
+const destructiveReceipt = new URL("../examples/destructive-action/receipt.json", import.meta.url);
 
-const exitCode = await new Promise((resolve, reject) => {
-  child.once("error", reject);
-  child.once("exit", code => resolve(code));
-  setTimeout(() => child.stdin.end(), 100);
-});
+{
+  const result = await runProxy(destructiveReceipt, destructive, {
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "delete_file",
+      arguments: { path: "/tmp/important.txt", recursive: false }
+    }
+  });
 
-assert.equal(exitCode, 0, stderr);
-assert.match(stdout, /"Hello, Trigger\."/);
-assert.match(stderr, /"event":"authorized"/);
+  assert.equal(result.exitCode, 0, result.stderr);
+  assert.match(result.stdout, /reached the executor/);
+  assert.match(result.stderr, /"event":"authorized"/);
+}
+
+{
+  const result = await runProxy(destructiveReceipt, destructive, {
+    jsonrpc: "2.0",
+    id: 3,
+    method: "tools/call",
+    params: {
+      name: "delete_file",
+      arguments: { path: "/tmp/other.txt", recursive: false }
+    }
+  });
+
+  assert.equal(result.exitCode, 0, result.stderr);
+  assert.match(result.stdout, /-32001/);
+  assert.doesNotMatch(result.stdout, /reached the executor/);
+  assert.match(result.stderr, /"event":"blocked"/);
+}
 
 console.log("mcp-proxy tests: PASS");
