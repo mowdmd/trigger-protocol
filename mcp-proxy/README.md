@@ -36,7 +36,7 @@ Gate mode forwards a `tools/call` only when the supplied Trigger Receipt authori
 The receipt must:
 
 - use the Trigger Protocol core format (`trigger/0.2`) or the compatible experimental trust-layer format (`trigger/0.3`);
-- contain the required authorization-event fields;
+- contain the required authorization-event fields, including `proposal_hash`;
 - not be expired;
 - not be explicitly revoked;
 - use `action: "mcp.tools/call"`;
@@ -54,7 +54,7 @@ The proxy never turns an AI recommendation into authority.
 
 The proxy does not mint, infer, or broaden authority.
 
-A receipt says which proposal, decision, actor, authority, action, and scope are being presented at the execution boundary. The deployment still needs a trust layer capable of establishing that those references are legitimate.
+A receipt says which proposal, proposal hash, decision, actor, authority, action, and scope are being presented at the execution boundary. The deployment still needs a trust layer capable of establishing that those references are legitimate.
 
 Today the package is intentionally conservative about this distinction: it validates the receipt artifact locally, but does not pretend that local JSON parsing or signature verification proves real-world identity or institutional legitimacy.
 
@@ -66,6 +66,7 @@ For consequential tools, bind the receipt to the exact tool and arguments:
 {
   "action": "mcp.tools/call",
   "scope": "delete_file",
+  "proposal_hash": "sha256:<proposal-content-hash>",
   "extensions": {
     "https://trigger-protocol.org/ns/mcp-proxy": {
       "tool_name": "delete_file",
@@ -107,6 +108,8 @@ The included demo server exposes a harmless `hello` tool. The example receipt au
 The proxy answers one narrow question:
 
 > Was this concrete MCP action presented with a valid Trigger Receipt before it reached the upstream server?
+
+It does not independently resolve whether the referenced proposal hash matches a separately stored proposal or whether the named actor truly held the authority; those remain deployment trust-layer checks.
 
 It does not answer:
 
