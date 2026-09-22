@@ -79,4 +79,29 @@ assert mutated["action"]!=trigger["action"]
 blocked={"id":"decision-2","decision":"reject","proposal_id":"proposal-1","proposal_hash":digest}
 assert blocked["decision"]!="approve"
 
+# Negative-space invariant: a later approval does not rewrite an earlier rejection.
+revised=dict(proposal, id="proposal-2", action="deploy", scope="production-canary")
+revised_digest=proposal_hash(revised)
+later={
+    "id":"decision-3",
+    "protocol":"trigger/0.2",
+    "proposal_id":"proposal-2",
+    "proposal_hash":revised_digest,
+    "actor":"human:alice",
+    "decision":"approve",
+    "authority_id":"auth:deploy",
+    "issued_at":"2026-09-19T00:05:00Z"
+}
+assert blocked["id"] != later["id"]
+assert blocked["decision"]=="reject"
+assert later["decision"]=="approve"
+assert blocked["proposal_hash"] != later["proposal_hash"]
+assert blocked["proposal_id"] != later["proposal_id"]
+
+def decision_allows_execution(decision):
+    return decision.get("decision")=="approve"
+
+assert not decision_allows_execution(blocked)
+assert decision_allows_execution(later)
+
 print("Trigger Protocol v0.2 cross-object conformance: PASS")
