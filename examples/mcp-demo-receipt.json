@@ -2,6 +2,7 @@
   "id": "receipt-demo-hello",
   "protocol": "trigger/0.2",
   "proposal_id": "proposal-demo-hello",
+  "proposal_hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
   "decision_id": "decision-demo-hello",
   "actor": "human:demo",
   "authority_id": "demo-authority",
