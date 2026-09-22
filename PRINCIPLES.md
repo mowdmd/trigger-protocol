@@ -1,7 +1,7 @@
 # Principles
 
 ## 1. Intelligence is not authority
-A system can reason well without possessing authority to act.
+A system can reason well without possessing authority to act. Authority MUST NOT be inferred solely from model output, recommendation, capability, or confidence; its source and grant are deployment-side trust decisions.
 
 ## 2. Do not delegate the human decision itself
 AI may generate evidence, options, predictions, or recommendations. The legitimate authority to decide whether a consequential action should occur remains explicitly assigned; it is never inferred from model output.
