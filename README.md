@@ -318,7 +318,6 @@ protocol/       canonical schemas, vocabulary, interoperability
 conformance/    portable compatibility vectors
 examples/       runnable examples
 concepts/       design concepts
-proposals/      RFC-style proposals
 bin/            minimal command-line utilities
 mcp-proxy/      npm middleware implementation
 ```
