@@ -59,24 +59,6 @@ A rejection, modification, deferral, or request for a second opinion remains a d
 
 This preserves the “negative space” around execution: the history of not only what happened, but what was explicitly stopped from happening at that point in the decision lifecycle.
 
-A minimal rejection Decision Record looks like this:
-
-```json
-{
-  "id": "decision-reject-001",
-  "protocol": "trigger/0.2",
-  "proposal_id": "deploy-002",
-  "proposal_hash": "sha256:...",
-  "actor": "human:oncall",
-  "decision": "reject",
-  "authority_id": "production-release",
-  "reason": "Canary evidence is insufficient for production release.",
-  "issued_at": "2026-09-19T00:10:00Z"
-}
-```
-
-This is a Decision Record, not a separate rejection receipt. Because the decision is `reject`, no Trigger is authorized by this record; the rejection itself remains durable history.
-
 ## The critical invariants
 
 **A model output MUST NOT be treated as authorization.**
