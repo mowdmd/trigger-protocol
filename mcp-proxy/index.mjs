@@ -76,7 +76,7 @@ function parseArgs(argv) {
     throw new Error("--public-key requires --receipt");
   }
 
-  return { mode, receiptPath, publicKeyPath, requireSignature, allowedTools, command };
+  return { mode, receiptPath, publicKeyPath, requireSignature, command };
 }
 
 function canonicalJson(value) {
@@ -199,7 +199,7 @@ export async function run(argv) {
         request_id: message.id ?? null,
         tool: toolName,
         receipt_id: receipt?.id ?? null,
-        authorization: receiptOk ? "trigger-receipt" : "local-allowlist"
+        authorization: "trigger-receipt"
       });
       child.stdin.write(line + "\n");
       return;
