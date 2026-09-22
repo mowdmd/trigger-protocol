@@ -1,6 +1,6 @@
 # Trigger Protocol
 
-**A minimal, open protocol for putting an explicit authorization boundary between AI reasoning and real-world action.**
+**A minimal, open protocol for making the transition from decision to action explicit, bounded, and verifiable.**
 
 > Intelligence is not authority.  
 > Recommendation is not authorization.  
@@ -19,6 +19,16 @@ PROPOSE → REVIEW → DECIDE → TRIGGER → EXECUTE → OUTCOME
 ```
 
 The Trigger is the boundary. A Trigger Receipt is portable evidence of that authorization event.
+
+The core semantic arc is:
+
+```text
+PROPOSE → DECIDE → TRIGGER → EXECUTE
+                 │
+          explicit boundary
+```
+
+`Decision` says what was decided. `Trigger` says what authorized execution. `Execution` says what actually happened. The protocol deliberately keeps those facts separate.
 
 > **A useful fictional reference point:** *PSYCHO-PASS* asks what happens when a society gives a system the power to determine what should be permitted. Trigger Protocol takes a different lesson: we cannot assume that every person who must stand at a consequential decision boundary can consistently carry that judgment alone. Instead of relying on exceptional individuals, the protocol makes the boundary itself explicit: decisions can be challenged, rejected, deferred, or revised, and those decisions remain part of the durable record.
 
@@ -89,6 +99,7 @@ A Trigger Receipt is the portable authorization artifact presented to an executo
   "id": "tr-001",
   "protocol": "trigger/0.2",
   "proposal_id": "deploy-001",
+  "proposal_hash": "sha256:...",
   "decision_id": "decision-001",
   "actor": "human:oncall",
   "authority_id": "production-release",
@@ -116,6 +127,8 @@ authority ──► decision ──► trigger receipt ──► execution
 
 A receipt can carry evidence of an authorization event; it does not manufacture the authority that made the event legitimate.
 
+The authorization binding is not just the receipt ID. The executor must preserve the chain `proposal_hash → decision_id → trigger/receipt → execution` and verify that the approved action still matches the proposal. A later or different proposal cannot silently reuse an earlier approval.
+
 ## Try it in under a minute
 
 ### 1. Run the built-in harmless demo
@@ -123,7 +136,7 @@ A receipt can carry evidence of an authorization event; it does not manufacture 
 Clone the repository:
 
 ```bash
-git clone https://github.com/moudmd/trigger-protocol.git
+git clone https://github.com/mowdmd/trigger-protocol.git
 cd trigger-protocol
 ```
 
@@ -185,6 +198,8 @@ npx trigger-mcp-proxy --mode gate --receipt ./examples/destructive-action/receip
 ```
 
 The receipt binds the authorization to the `delete_file` tool and its exact arguments. Change the path and the proxy blocks the call before the executor sees it.
+
+The protocol-level binding covers the proposal and approved action; the MCP adapter additionally binds the concrete tool arguments with a canonical-JSON SHA-256 extension.
 
 For the v0.3 trust-layer experiment, the repository also includes dependency-free Ed25519 receipt signing and verification. Signature support is experimental and optional; it does not replace authority validation:
 
@@ -334,7 +349,7 @@ Implemented today:
 - exact tool/argument binding;
 - experimental Ed25519 receipt signature profile.
 
-The trust layer is intentionally incomplete. Remaining work includes identity binding, authority/delegation validation graphs, revocation, stronger cross-object conformance, and decision replay/governance diff. The signature profile authenticates receipt integrity, not authority; deployments still need their own identity, authority, delegation, revocation, and replay controls.
+The trust layer is intentionally incomplete. Remaining work includes identity binding, authority/delegation validation graphs, revocation, and decision replay/governance diff. Cross-object conformance and proposal-hash binding are part of the current experimental semantic core. The signature profile authenticates receipt integrity, not authority; deployments still need their own identity, authority, delegation, revocation, and replay controls.
 
 ## Network effect
 
