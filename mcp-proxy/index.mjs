@@ -59,15 +59,11 @@ function parseArgs(argv) {
 
   const command = argv.slice(i);
   if (!command.length) throw new Error("missing upstream MCP server command; use -- <command> [args...]");
-  if (mode === "gate" && !receiptPath) {
-    throw new Error("gate mode requires --receipt");
-  }
+  if (mode === "gate" && !receiptPath) throw new Error("gate mode requires --receipt");
   if (requireSignature && (!receiptPath || !publicKeyPath)) {
     throw new Error("--require-signature requires --receipt and --public-key");
   }
-  if (publicKeyPath && !receiptPath) {
-    throw new Error("--public-key requires --receipt");
-  }
+  if (publicKeyPath && !receiptPath) throw new Error("--public-key requires --receipt");
 
   return { mode, receiptPath, publicKeyPath, requireSignature, command };
 }
@@ -77,8 +73,10 @@ function sha256(value) {
 }
 
 function verifyReceiptSignature(receipt, publicKeyPath) {
-  if (!receipt.signature || receipt.signature.algorithm !== "Ed25519") return false;
-  if (!receipt.signature.key_id || !receipt.signature.signature) return false;
+  if (!receipt.signature || typeof receipt.signature !== "object") return false;
+  if (receipt.signature.algorithm !== "Ed25519") return false;
+  if (typeof receipt.signature.key_id !== "string" || !receipt.signature.key_id) return false;
+  if (typeof receipt.signature.signature !== "string" || !receipt.signature.signature) return false;
   if (!publicKeyPath) return false;
 
   const copy = structuredClone(receipt);
@@ -92,13 +90,51 @@ function verifyReceiptSignature(receipt, publicKeyPath) {
   );
 }
 
+function parseDate(value, field) {
+  if (typeof value !== "string" || !value) throw new Error(`receipt ${field} must be a date-time string`);
+  const timestamp = Date.parse(value);
+  if (!Number.isFinite(timestamp)) throw new Error(`receipt ${field} is invalid`);
+  return timestamp;
+}
+
 function loadReceipt(path, publicKeyPath, requireSignature) {
   const receipt = JSON.parse(readFileSync(path, "utf8"));
+  if (!receipt || typeof receipt !== "object" || Array.isArray(receipt)) {
+    throw new Error("receipt must be a JSON object");
+  }
+
   const required = ["id", "protocol", "proposal_id", "proposal_hash", "decision_id", "actor", "authority_id", "action", "issued_at"];
-  for (const key of required) if (receipt[key] === undefined) throw new Error(`receipt missing ${key}`);
-  if (!["trigger/0.2", "trigger/0.3"].includes(receipt.protocol)) throw new Error("unsupported receipt protocol");
-  if (receipt.expires_at && Date.parse(receipt.expires_at) <= Date.now()) throw new Error("receipt is expired");
+  for (const key of required) {
+    if (typeof receipt[key] !== "string" || !receipt[key]) {
+      throw new Error(`receipt missing or invalid ${key}`);
+    }
+  }
+
+  if (!["trigger/0.2", "trigger/0.3"].includes(receipt.protocol)) {
+    throw new Error("unsupported receipt protocol");
+  }
+
+  const issuedAt = parseDate(receipt.issued_at, "issued_at");
+  if (issuedAt > Date.now()) throw new Error("receipt issued_at is in the future");
+
+  if (receipt.expires_at !== undefined) {
+    const expiresAt = parseDate(receipt.expires_at, "expires_at");
+    if (expiresAt <= issuedAt) throw new Error("receipt expires_at must be after issued_at");
+    if (expiresAt <= Date.now()) throw new Error("receipt is expired");
+  }
+
+  if (receipt.revoked !== undefined && typeof receipt.revoked !== "boolean") {
+    throw new Error("receipt revoked must be boolean");
+  }
   if (receipt.revoked === true) throw new Error("receipt is revoked");
+
+  if (receipt.signature !== undefined &&
+      (!receipt.signature || typeof receipt.signature !== "object" || Array.isArray(receipt.signature) ||
+       receipt.signature.algorithm !== "Ed25519" ||
+       typeof receipt.signature.key_id !== "string" || !receipt.signature.key_id ||
+       typeof receipt.signature.signature !== "string" || !receipt.signature.signature)) {
+    throw new Error("invalid receipt signature");
+  }
 
   if (requireSignature) {
     if (!verifyReceiptSignature(receipt, publicKeyPath)) {
