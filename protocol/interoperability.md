@@ -58,10 +58,9 @@ Cryptographic signatures, identity federation, revocation registries, and transp
 
 ## MCP adapter profile
 
-The reference `trigger-mcp-proxy` maps an MCP `tools/call` to the Trigger Protocol action `mcp.tools/call`. In gate mode, the proxy forwards a call only when a valid Trigger Receipt covers the requested tool/scope. A namespaced extension may bind the receipt to the exact tool name and canonical-JSON SHA-256 of its arguments.
+The reference `trigger-mcp-proxy` maps an MCP `tools/call` to the Trigger Protocol action `mcp.tools/call`. In gate mode, the proxy forwards a call only when a Trigger Receipt has a non-empty scope covering the requested tool and an exact MCP `tool_name` plus canonical-JSON SHA-256 argument binding matching the request. Missing or malformed bindings fail closed.
 
-The adapter is intentionally asymmetric: the upstream MCP server remains the execution target, while the proxy is the authorization enforcement point. Observe mode is transparent and therefore provides instrumentation, not enforcement.
-
+The adapter is intentionally asymmetric: the upstream MCP server remains the execution target, while the proxy is the receipt/invocation enforcement point. It does not by itself dereference `decision_id`, prove that the referenced Decision is `approve`, or establish authority/identity legitimacy. Those remain deployment trust-layer checks required for full execution conformance. Observe mode is transparent and therefore provides instrumentation, not enforcement.
 
 ## Proposal hash canonicalization
 
