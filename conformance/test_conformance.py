@@ -6,12 +6,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from test_vectors import valid_receipt, VECTORS
+from canonical_json import canonical_json
 
 ROOT=Path(__file__).resolve().parent
+CANONICAL_VECTORS=json.loads((ROOT/"canonical-vectors.json").read_text(encoding="utf-8"))
 decision=json.loads((ROOT.parent/"examples"/"decision-rejection.json").read_text(encoding="utf-8"))
-
-def canonical_json(value):
-    return json.dumps(value,ensure_ascii=False,separators=(",",":"),sort_keys=True)
 
 def proposal_hash(proposal):
     return "sha256:"+hashlib.sha256(canonical_json(proposal).encode("utf-8")).hexdigest()
@@ -104,4 +103,10 @@ def decision_allows_execution(decision):
 assert not decision_allows_execution(blocked)
 assert decision_allows_execution(later)
 
+for vector in CANONICAL_VECTORS["vectors"]:
+    encoded=canonical_json(vector["value"])
+    assert encoded==vector["canonical"], vector["name"]
+    assert hashlib.sha256(encoded.encode("utf-8")).hexdigest()==vector["sha256"], vector["name"]
+
 print("Trigger Protocol v0.2 cross-object conformance: PASS")
+print("JCS canonical JSON vectors: PASS")
