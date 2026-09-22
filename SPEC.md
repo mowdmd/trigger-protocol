@@ -100,4 +100,4 @@ Audit data should be sufficient to reconstruct authority and causality while min
 
 JSON/UTF-8 and JSON Schema Draft 2020-12 are the reference representation. Transport is intentionally unspecified. See protocol/interoperability.md.
 
-`trigger/0.2` is the semantic core. The `0.3` signature profile adds optional receipt integrity/authenticity without changing the core authority model. Implementations MUST NOT silently reinterpret another protocol version or profile. Unknown extension fields MUST be preserved when forwarding records.
+`trigger/0.2` is the semantic core. The `0.3` signature profile adds optional receipt integrity/authenticity without changing the core authority model. It uses a dedicated `trigger/0.3` receipt representation rather than changing the core `trigger/0.2` Trigger semantics. Implementations MUST NOT silently reinterpret another protocol version or profile. Unknown extension fields MUST be preserved when forwarding records.
