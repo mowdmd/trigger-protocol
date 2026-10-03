@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trigger-protocol.org/schema/local-trust-state.schema.json",
+  "title": "Local deployment trust snapshot (not a core protocol object)",
+  "type": "object",
+  "required": [
+    "updated_at",
+    "expires_at",
+    "proposals",
+    "decisions",
+    "authorities",
+    "delegations",
+    "revoked_receipt_ids",
+    "revoked_key_ids",
+    "key_bindings"
+  ],
+  "properties": {
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "proposals": {
+      "type": "array",
+      "items": {
+        "$ref": "proposal.schema.json"
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "$ref": "decision.schema.json"
+      }
+    },
+    "authorities": {
+      "type": "array",
+      "items": {
+        "$ref": "authority.schema.json"
+      }
+    },
+    "delegations": {
+      "type": "array",
+      "items": {
+        "$ref": "delegation.schema.json"
+      }
+    },
+    "revoked_receipt_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "revoked_key_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "key_bindings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "key_id",
+          "actor",
+          "authority_ids"
+        ],
+        "properties": {
+          "key_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "actor": {
+            "type": "string",
+            "minLength": 1
+          },
+          "authority_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

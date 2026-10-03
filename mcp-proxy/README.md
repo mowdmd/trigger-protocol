@@ -1,6 +1,6 @@
 # trigger-mcp-proxy
 
-A zero-dependency stdio middleware that inserts a Trigger Protocol authorization boundary between an existing MCP client/agent and MCP server.
+A schema-validated stdio middleware that inserts a Trigger Protocol authorization boundary between an existing MCP client/agent and MCP server.
 
 ## Install / run
 
@@ -105,7 +105,7 @@ Then send:
 
 The included demo server exposes a harmless `hello` tool. The example receipt authorizes exactly `hello` with the demo invocation arguments.
 
-The optional `nonce` field is an identifier carried by the receipt; this adapter does not treat it as a replay counter or consume it. Replay prevention across repeated requests or process restarts remains a deployment responsibility, consistent with the threat model.
+The optional `nonce` field is an identifier carried by the receipt; it is consumed only when `--replay-dir` is configured. That opt-in local store prevents reuse across requests and process restarts; distributed replay prevention remains a deployment responsibility.
 
 ## Security boundary
 
@@ -113,7 +113,7 @@ The proxy answers one narrow question:
 
 > Was this concrete MCP action presented with a structurally valid Trigger Receipt whose scope, exact tool, and exact arguments cover this invocation before it reached the upstream server?
 
-It does not independently resolve whether the referenced proposal hash matches a separately stored proposal, whether the referenced Decision was actually an approval, or whether the named actor truly held the authority; those remain deployment trust-layer checks.
+Without `--trust-state`, it does not independently resolve whether the referenced proposal hash matches a separately stored proposal, whether the referenced Decision was actually an approval, or whether the named actor truly held the authority; those remain deployment trust-layer checks.
 
 It does not answer:
 
@@ -138,3 +138,5 @@ npm test
 node bin/trigger-mcp-proxy.mjs --help
 npm pack --dry-run
 ```
+
+See [the local trust profile](../protocol/local-trust-profile.md) for `--key-id`, `--trust-state`, `--replay-dir`, migration details, and limitations.

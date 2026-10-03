@@ -11,7 +11,16 @@ export function canonicalJson(value) {
 
 function serialize(value) {
   if (value === null) return "null";
-  if (typeof value === "string") return JSON.stringify(value);
+  if (typeof value === "string") {
+    for (let i = 0; i < value.length; i++) {
+      const code = value.charCodeAt(i);
+      if (code >= 0xd800 && code <= 0xdbff) {
+        const next = value.charCodeAt(++i);
+        if (!(next >= 0xdc00 && next <= 0xdfff)) throw new TypeError("JCS rejects lone surrogates");
+      } else if (code >= 0xdc00 && code <= 0xdfff) throw new TypeError("JCS rejects lone surrogates");
+    }
+    return JSON.stringify(value);
+  }
   if (typeof value === "boolean") return value ? "true" : "false";
   if (typeof value === "number") {
     if (!Number.isFinite(value)) throw new TypeError("JCS does not permit non-finite numbers");
@@ -25,7 +34,7 @@ function serialize(value) {
   }
   if (typeof value === "object") {
     const keys = Object.keys(value).sort();
-    return "{" + keys.map(key => JSON.stringify(key) + ":" + serialize(value[key])).join(",") + "}";
+    return "{" + keys.map(key => serialize(key) + ":" + serialize(value[key])).join(",") + "}";
   }
   throw new TypeError("JCS only supports JSON values");
 }

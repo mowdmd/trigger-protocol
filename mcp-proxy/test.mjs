@@ -105,7 +105,7 @@ try {
     method: "tools/call",
     params: { name: "hello", arguments: { name: "Trigger" } }
   });
-  assert.match(blockedArrayScopeV02.out, /Trigger Protocol authorization required/);
+  assert.equal(blockedArrayScopeV02.exitCode, 1);
 
   const invalidScope = { ...baseReceipt, scope: { tool: "hello" } };
   const invalidScopePath = new URL("./invalid-scope.json", `file://${tempDir}/`).pathname;
@@ -116,8 +116,7 @@ try {
     method: "tools/call",
     params: { name: "hello", arguments: { name: "Trigger" } }
   });
-  assert.equal(blockedType.exitCode, 0, blockedType.err);
-  assert.match(blockedType.out, /Trigger Protocol authorization required/);
+  assert.equal(blockedType.exitCode, 1);
 
   const missingToolBinding = { ...baseReceipt, extensions: {} };
   const missingToolBindingPath = new URL("./missing-tool-binding.json", `file://${tempDir}/`).pathname;
@@ -177,14 +176,14 @@ try {
   });
   assert.match(blockedWrongArguments.out, /Trigger Protocol authorization required/);
 
-  const invalidRevoked = { ...baseReceipt, revoked: "false" };
+  const invalidRevoked = { ...baseReceipt, protocol: "trigger/0.3", revoked: "false" };
   const invalidRevokedPath = new URL("./invalid-revoked.json", `file://${tempDir}/`).pathname;
   writeFileSync(invalidRevokedPath, JSON.stringify(invalidRevoked));
   const blockedInvalidRevoked = await runGate(invalidRevokedPath, { jsonrpc: "2.0", id: 8, method: "tools/call", params: { name: "hello", arguments: { name: "Trigger" } } });
   assert.equal(blockedInvalidRevoked.exitCode, 1);
-  assert.match(blockedInvalidRevoked.err, /invalid revoked/);
+  assert.match(blockedInvalidRevoked.err, /revoked/);
 
-  const revokedReceipt = { ...baseReceipt, revoked: true };
+  const revokedReceipt = { ...baseReceipt, protocol: "trigger/0.3", revoked: true };
   const revokedPath = new URL("./revoked.json", `file://${tempDir}/`).pathname;
   writeFileSync(revokedPath, JSON.stringify(revokedReceipt));
   const blockedRevoked = await runGate(revokedPath, { jsonrpc: "2.0", id: 9, method: "tools/call", params: { name: "hello", arguments: { name: "Trigger" } } });

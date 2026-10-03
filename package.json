@@ -1,14 +1,14 @@
 {
   "name": "trigger-mcp-proxy",
   "version": "0.2.0",
-  "description": "A minimal zero-dependency stdio MCP proxy and Trigger Protocol receipt tooling.",
+  "description": "A stdio MCP proxy with schema validation and optional local trust enforcement.",
   "type": "module",
   "bin": {
     "trigger-mcp-proxy": "./bin/trigger-mcp-proxy.mjs",
     "trigger-receipt": "./bin/trigger-receipt.mjs"
   },
   "scripts": {
-    "test": "npm run test:schema && node mcp-proxy/test.mjs && node mcp-proxy/test-signature.mjs",
+    "test": "npm run test:schema && node mcp-proxy/test.mjs && node mcp-proxy/test-signature.mjs && node --test mcp-proxy/test-hardening.mjs",
     "test:schema": "node mcp-proxy/test-schema.mjs"
   },
   "engines": {
@@ -32,11 +32,21 @@
   ],
   "files": [
     "bin",
-    "mcp-proxy",
-    "protocol",
+    "mcp-proxy/index.mjs",
+    "mcp-proxy/trust.mjs",
+    "mcp-proxy/README.md",
+    "protocol/*.mjs",
+    "protocol/*.json",
+    "protocol/*.md",
+    "protocol/*.py",
     "examples",
     "README.md",
-    "LICENSE",
-    "bin/trigger-receipt.mjs"
-  ]
+    "MCP_PROXY.md",
+    "THREAT_MODEL.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1"
+  }
 }

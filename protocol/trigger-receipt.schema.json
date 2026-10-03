@@ -10,7 +10,7 @@
     "protocol": {"const": "trigger/0.2"},
     "proposal_id": {"type": "string", "minLength": 1},
     "decision_id": {"type": "string", "minLength": 1},
-    "proposal_hash": {"type": "string", "minLength": 1},
+    "proposal_hash": {"type": "string", "minLength": 1,"pattern":"^sha256:[0-9a-f]{64}$"},
     "actor": {"type": "string", "minLength": 1},
     "authority_id": {"type": "string", "minLength": 1},
     "action": {"type": "string", "minLength": 1},

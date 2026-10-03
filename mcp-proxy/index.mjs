@@ -1,8 +1,13 @@
 import { spawn } from "node:child_process";
-import { createHash, createPublicKey, verify as verifySignature } from "node:crypto";
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { createInterface } from "node:readline";
-import { canonicalJson, canonicalJsonSha256 } from "../protocol/canonical-json.mjs";
+import { canonicalJsonSha256 } from "../protocol/canonical-json.mjs";
+
+import { parseJson, readJson } from '../protocol/strict-json.mjs';
+import { validateReceipt, checkValidity } from '../protocol/validation.mjs';
+import { verifyReceipt } from '../protocol/receipt-signature.mjs';
+import { checkTrust, consumeReceipt } from './trust.mjs';
 
 const NS = "https://trigger-protocol.org/ns/mcp-proxy";
 
@@ -16,6 +21,9 @@ Options:
   --receipt <file>        Trigger Receipt JSON used by --mode gate
   --public-key <file>    Trusted Ed25519 public key for receipt signature verification
   --require-signature     Require and verify the receipt's Ed25519 signature
+  --key-id <id>           Expected ID of the configured public key
+  --trust-state <file>    Reload local decision/authority/revocation snapshot per call
+  --replay-dir <dir>      Existing shared local directory for durable single-use claims
   --help                  Show this help
 
 Examples:
@@ -29,6 +37,7 @@ function parseArgs(argv) {
   let receiptPath = null;
   let publicKeyPath = null;
   let requireSignature = false;
+  const extra = {};
   let i = 0;
 
   for (; i < argv.length; i++) {
@@ -50,6 +59,12 @@ function parseArgs(argv) {
       if (!publicKeyPath) throw new Error("--public-key requires a file");
       continue;
     }
+    if (["--key-id", "--trust-state", "--replay-dir"].includes(arg)) {
+      const value = argv[++i];
+      if (!value || value.startsWith("--")) throw new Error(`${arg} requires a value`);
+      extra[arg.slice(2)] = value;
+      continue;
+    }
     if (arg === "--require-signature") {
       requireSignature = true;
       continue;
@@ -69,74 +84,30 @@ function parseArgs(argv) {
     throw new Error("--public-key requires --receipt");
   }
 
-  return { mode, receiptPath, publicKeyPath, requireSignature, command };
+  if (Boolean(publicKeyPath) !== Boolean(extra['key-id'])) throw new Error('--public-key and --key-id must be configured together');
+  if ((extra['trust-state'] || extra['replay-dir']) && (mode !== 'gate' || !requireSignature)) {
+    throw new Error('--trust-state and --replay-dir require gate mode and --require-signature');
+  }
+  return { mode, receiptPath, publicKeyPath, requireSignature, command, ...extra };
 }
 
 function sha256(value) {
   return canonicalJsonSha256(value, createHash);
 }
 
-function verifyReceiptSignature(receipt, publicKeyPath) {
-  if (!receipt.signature || receipt.signature.algorithm !== "Ed25519") return false;
-  if (!receipt.signature.key_id || !receipt.signature.signature) return false;
-  if (!publicKeyPath) return false;
-
-  const copy = structuredClone(receipt);
-  delete copy.signature;
-  const payload = Buffer.from(canonicalJson(copy), "utf8");
-  return verifySignature(
-    null,
-    payload,
-    createPublicKey(readFileSync(publicKeyPath)),
-    Buffer.from(receipt.signature.signature, "base64url")
-  );
-}
-
-function loadReceipt(path, publicKeyPath, requireSignature) {
-  const receipt = JSON.parse(readFileSync(path, "utf8"));
-  const required = ["id", "protocol", "proposal_id", "proposal_hash", "decision_id", "actor", "authority_id", "action", "issued_at"];
-  for (const key of required) {
-    if (typeof receipt[key] !== "string" || receipt[key].length === 0) {
-      throw new Error(`receipt missing or empty ${key}`);
-    }
+function loadReceipt(path, options) {
+  const receipt = validateReceipt(readJson(path));
+  checkValidity(receipt);
+  if (options.requireSignature || (options.publicKeyPath && receipt.signature !== undefined)) {
+    verifyReceipt(receipt, readFileSync(options.publicKeyPath), options['key-id']);
   }
-  if (!["trigger/0.2", "trigger/0.3"].includes(receipt.protocol)) throw new Error("unsupported receipt protocol");
-  if (!/^sha256:[0-9a-f]{64}$/.test(receipt.proposal_hash)) {
-    throw new Error("invalid proposal_hash");
-  }
-
-  const issuedAt = Date.parse(receipt.issued_at);
-  if (!Number.isFinite(issuedAt)) throw new Error("invalid issued_at");
-  if (issuedAt > Date.now()) throw new Error("receipt issued_at is in the future");
-
-  if (receipt.expires_at !== undefined) {
-    if (typeof receipt.expires_at !== "string" || receipt.expires_at.length === 0) {
-      throw new Error("invalid expires_at");
-    }
-    const expiresAt = Date.parse(receipt.expires_at);
-    if (!Number.isFinite(expiresAt)) throw new Error("invalid expires_at");
-    if (expiresAt <= issuedAt) throw new Error("expires_at must be after issued_at");
-    if (expiresAt <= Date.now()) throw new Error("receipt is expired");
-  }
-
-  if (receipt.revoked !== undefined && typeof receipt.revoked !== "boolean") {
-    throw new Error("invalid revoked");
-  }
-  if (receipt.revoked === true) throw new Error("receipt is revoked");
-
-  if (requireSignature) {
-    if (!verifyReceiptSignature(receipt, publicKeyPath)) {
-      throw new Error("receipt signature verification failed");
-    }
-  } else if (publicKeyPath && receipt.signature && !verifyReceiptSignature(receipt, publicKeyPath)) {
-    throw new Error("receipt signature verification failed");
-  }
-
   return receipt;
 }
 
 function receiptAllows(receipt, toolName, args) {
   if (!receipt) return false;
+  checkValidity(receipt);
+  if (typeof toolName !== 'string' || !toolName || !args || typeof args !== 'object' || Array.isArray(args)) return false;
   if (receipt.action !== "mcp.tools/call") return false;
 
   const scope = receipt.scope;
@@ -179,7 +150,7 @@ export async function run(argv) {
   if (options.help) { usage(); return; }
 
   const receipt = options.receiptPath
-    ? loadReceipt(options.receiptPath, options.publicKeyPath, options.requireSignature)
+    ? loadReceipt(options.receiptPath, options)
     : null;
 
   const child = spawn(options.command[0], options.command.slice(1), {
@@ -201,18 +172,49 @@ export async function run(argv) {
   const rl = createInterface({ input: process.stdin, crlfDelay: Infinity });
   rl.on("line", (line) => {
     if (!line.trim()) return;
+    if (options.mode === 'observe') { child.stdin.write(line + "\n"); return; }
     let message;
-    try { message = JSON.parse(line); }
-    catch { child.stdin.write(line + "\n"); return; }
-
-    if (options.mode === "observe" || message.method !== "tools/call") {
+    try { message = parseJson(line); }
+    catch {
+      process.stdout.write(jsonRpcError(null, -32700, 'Invalid JSON input'));
+      logEvent('blocked', { reason: 'invalid-json' });
+      return;
+    }
+    // Reject batch/scalar input before routing. JSON-RPC responses remain pass-through.
+    const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+    const validId = id => id === null || typeof id === 'string' || Number.isSafeInteger(id);
+    const validRequest = object(message) && message.jsonrpc === '2.0' &&
+      typeof message.method === 'string' && message.method.length > 0 &&
+      (message.id === undefined || validId(message.id)) &&
+      message.result === undefined && message.error === undefined &&
+      (message.params === undefined || object(message.params) || Array.isArray(message.params));
+    const validResponse = object(message) && message.jsonrpc === '2.0' && message.method === undefined &&
+      message.id !== undefined && validId(message.id) &&
+      ((Object.hasOwn(message, 'result') && !Object.hasOwn(message, 'error')) ||
+       (!Object.hasOwn(message, 'result') && object(message.error) && Number.isInteger(message.error.code) && typeof message.error.message === 'string'));
+    if (!validRequest && !validResponse) {
+      process.stdout.write(jsonRpcError(null, -32600, 'Invalid JSON-RPC envelope'));
+      logEvent('blocked', { reason: 'invalid-envelope' });
+      return;
+    }
+    if (message.method !== "tools/call") {
       child.stdin.write(line + "\n");
       return;
     }
 
     const toolName = message.params?.name;
-    const args = message.params?.arguments ?? {};
-    const receiptOk = receiptAllows(receipt, toolName, args);
+    const args = message.params?.arguments === undefined ? {} : message.params.arguments;
+    let receiptOk = false;
+    let reason = 'no-valid-trigger';
+    try {
+      // Re-read the receipt and key too: file revocation/rotation takes effect per call.
+      const current = loadReceipt(options.receiptPath, options);
+      // A session is pinned to its initial authorization; updates require restart.
+      if (JSON.stringify(current) !== JSON.stringify(receipt)) throw new Error('receipt changed; restart required');
+      receiptOk = receiptAllows(current, toolName, args);
+      if (receiptOk && options['trust-state']) checkTrust(current, options['trust-state'], options['key-id']);
+      if (receiptOk && options['replay-dir']) consumeReceipt(current, options['replay-dir']);
+    } catch (error) { receiptOk = false; reason = error.message; }
     if (receiptOk) {
       logEvent("authorized", {
         protocol: receipt?.protocol ?? "trigger/0.2",
@@ -229,7 +231,7 @@ export async function run(argv) {
       protocol: receipt?.protocol ?? "trigger/0.2",
       request_id: message.id ?? null,
       tool: toolName,
-      reason: "no-valid-trigger"
+      reason
     });
 
     if (message.id !== undefined) {
