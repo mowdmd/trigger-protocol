@@ -16,6 +16,7 @@ def _serialize(value):
     if value is None:
         return "null"
     if isinstance(value, str):
+        value.encode("utf-8", "strict")
         return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
     if isinstance(value, bool):
         return "true" if value else "false"
@@ -42,7 +43,9 @@ def _serialize_number(value):
         raise ValueError("JCS does not permit non-finite numbers")
     if value == 0:
         return "0"
-    if value.is_integer() and abs(value) <= _SAFE_INTEGER:
+    if value.is_integer():
+        if abs(value) > _SAFE_INTEGER:
+            raise ValueError("unsafe integer")
         return str(int(value))
 
     raw = repr(value).lower()

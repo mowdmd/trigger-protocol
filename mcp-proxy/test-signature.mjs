@@ -18,14 +18,14 @@ try {
   r = spawnSync(process.execPath, ["bin/trigger-receipt.mjs", "sign", "--receipt", receipt, "--private-key", priv, "--key-id", "test-key"], { encoding: "utf8" });
   assert.equal(r.status, 0, r.stderr);
 
-  r = spawnSync(process.execPath, ["bin/trigger-receipt.mjs", "verify", "--receipt", receipt, "--public-key", pub], { encoding: "utf8" });
+  r = spawnSync(process.execPath, ["bin/trigger-receipt.mjs", "verify", "--receipt", receipt, "--public-key", pub, "--key-id", "test-key"], { encoding: "utf8" });
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stdout, /Signature valid/);
 
   const tampered = JSON.parse(readFileSync(receipt, "utf8"));
   tampered.scope = "other_tool";
   writeFileSync(receipt, JSON.stringify(tampered));
-  r = spawnSync(process.execPath, ["bin/trigger-receipt.mjs", "verify", "--receipt", receipt, "--public-key", pub], { encoding: "utf8" });
+  r = spawnSync(process.execPath, ["bin/trigger-receipt.mjs", "verify", "--receipt", receipt, "--public-key", pub, "--key-id", "test-key"], { encoding: "utf8" });
   assert.notEqual(r.status, 0);
 
   console.log("receipt signature tests: PASS");

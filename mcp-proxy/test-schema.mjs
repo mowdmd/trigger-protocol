@@ -53,3 +53,11 @@ assert.equal(receipt03.properties.scope.oneOf[0].minLength, 1);
 assert.equal(receipt03.properties.scope.oneOf[1].minItems, 1);
 
 console.log("schema sanity: PASS");
+
+const { validateRecord, validateReceipt } = await import('../protocol/validation.mjs');
+for (const file of schemas) {
+  assert.throws(() => validateRecord({}, file.replace('protocol/', '')), /invalid/);
+}
+for (const path of ['examples/mcp-demo-receipt.json', 'examples/destructive-action/receipt.json']) {
+  validateReceipt(JSON.parse(readFileSync(resolve(root, path), 'utf8')));
+}

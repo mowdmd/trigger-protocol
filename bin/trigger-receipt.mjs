@@ -1,14 +1,11 @@
 #!/usr/bin/env node
-import { generateKeyPairSync, sign, verify } from "node:crypto";
+import { generateKeyPairSync, sign, createPrivateKey } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import { parseArgs } from "node:util";
-import { canonicalJson } from "../protocol/canonical-json.mjs";
+import { readJson } from '../protocol/strict-json.mjs';
+import { validateReceipt } from '../protocol/validation.mjs';
+import { signingBytes, verifyReceipt } from '../protocol/receipt-signature.mjs';
 
-function unsignedReceipt(receipt) {
-  const copy = structuredClone(receipt);
-  delete copy.signature;
-  return copy;
-}
 function usage() {
   console.error("Usage: trigger-receipt keygen|sign|verify ...");
 }
@@ -36,21 +33,20 @@ if (command === "keygen") {
   console.log("Ed25519 key pair generated.");
 } else if (command === "sign") {
   if (!values.receipt || !values["private-key"] || !values["key-id"]) throw new Error("--receipt, --private-key and --key-id are required");
-  const receipt = JSON.parse(readFileSync(values.receipt, "utf8"));
+  const receipt = validateReceipt(readJson(values.receipt));
   if (receipt.protocol !== "trigger/0.3") throw new Error("signing requires protocol trigger/0.3");
-  const payload = Buffer.from(canonicalJson(unsignedReceipt(receipt)), "utf8");
-  const signature = sign(null, payload, readFileSync(values["private-key"], "utf8")).toString("base64url");
+  const payload = signingBytes(receipt);
+  const key = createPrivateKey(readFileSync(values['private-key']));
+  if (key.asymmetricKeyType !== 'ed25519') throw new Error('signing key must be Ed25519');
+  const signature = sign(null, payload, key).toString('base64url');
   receipt.signature = { algorithm: "Ed25519", key_id: values["key-id"], signature };
   writeFileSync(values.receipt, JSON.stringify(receipt, null, 2) + "\n");
   console.log("Receipt signed.");
 } else if (command === "verify") {
-  if (!values.receipt || !values["public-key"]) throw new Error("--receipt and --public-key are required");
-  const receipt = JSON.parse(readFileSync(values.receipt, "utf8"));
+  if (!values.receipt || !values["public-key"] || !values["key-id"]) throw new Error("--receipt, --public-key and --key-id are required");
+  const receipt = validateReceipt(readJson(values.receipt));
   if (receipt.protocol !== "trigger/0.3") throw new Error("receipt protocol must be trigger/0.3");
-  if (!receipt.signature || receipt.signature.algorithm !== "Ed25519") throw new Error("missing Ed25519 signature");
-  const payload = Buffer.from(canonicalJson(unsignedReceipt(receipt)), "utf8");
-  const ok = verify(null, payload, readFileSync(values["public-key"], "utf8"), Buffer.from(receipt.signature.signature, "base64url"));
-  if (!ok) throw new Error("signature verification failed");
+  verifyReceipt(receipt, readFileSync(values['public-key']), values['key-id']);
   console.log("Signature valid.");
 } else {
   usage();

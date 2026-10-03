@@ -72,3 +72,7 @@ These are related patterns, not replacements or claims of equivalence. Trigger P
 ## Out of scope
 
 Physical security, identity-provider security, legal compliance, model alignment, organizational legitimacy, and the security of an executor outside the protocol enforcement path are out of scope.
+
+## Local deployment controls
+
+The opt-in [local trust profile](protocol/local-trust-profile.md) implements fresh local revocation snapshots, bounded cross-object checks, and single-host at-most-once forwarding. Its files are operator trust inputs and must not be writable by agents. It does not establish immutable Decision history, distributed revocation, or exactly-once effects.

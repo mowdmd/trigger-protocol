@@ -1,0 +1,20 @@
+{
+  "id": "receipt-demo-hello",
+  "protocol": "trigger/0.3",
+  "proposal_id": "proposal-demo-hello",
+  "proposal_hash": "sha256:a38ab8c414e62abd0a8f724c91f53dedb928611bf0cf7f0051acb7e475579059",
+  "decision_id": "decision-demo-hello",
+  "actor": "human:demo",
+  "authority_id": "demo-authority",
+  "action": "mcp.tools/call",
+  "scope": "hello",
+  "issued_at": "2026-01-01T00:00:00Z",
+  "expires_at": "2099-01-01T00:00:00Z",
+  "extensions": {
+    "https://trigger-protocol.org/ns/mcp-proxy": {
+      "tool_name": "hello",
+      "arguments_sha256": "381e8d61c5e6b05220e97e611f591e6e8c923ee618981b48d121657de590cf30"
+    }
+  },
+  "nonce": "local-demo-once"
+}

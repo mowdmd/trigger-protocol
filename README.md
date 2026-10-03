@@ -122,6 +122,7 @@ Clone the repository:
 ```bash
 git clone https://github.com/mowdmd/trigger-protocol.git
 cd trigger-protocol
+npm ci
 ```
 
 Then run the proxy against the included MCP-like stdio demo server:
@@ -193,15 +194,15 @@ The receipt binds the authorization to the `delete_file` tool and its exact argu
 
 The protocol-level binding covers the proposal and approved action; the MCP adapter additionally binds the concrete tool arguments with a canonical-JSON SHA-256 extension.
 
-For the v0.3 trust-layer experiment, the repository also includes dependency-free Ed25519 receipt signing and verification. Signature support is experimental and optional; it does not replace authority validation:
+For the v0.3 trust-layer experiment, the repository also includes Ed25519 receipt signing and verification. Signature support is experimental and optional; it does not replace authority validation:
 
 ```bash
 node ./bin/trigger-receipt.mjs keygen --private-key ./private.pem --public-key ./public.pem
 node ./bin/trigger-receipt.mjs sign --receipt ./examples/destructive-action/receipt.json --private-key ./private.pem --key-id demo-operator
-node ./bin/trigger-receipt.mjs verify --receipt ./examples/destructive-action/receipt.json --public-key ./public.pem
+node ./bin/trigger-receipt.mjs verify --receipt ./examples/destructive-action/receipt.json --public-key ./public.pem --key-id demo-operator
 
 # Then enforce it at the MCP boundary:
-npx trigger-mcp-proxy --mode gate --receipt ./examples/destructive-action/receipt.json --public-key ./public.pem --require-signature -- node ./examples/destructive-action/server.mjs
+npx trigger-mcp-proxy --mode gate --receipt ./examples/destructive-action/receipt.json --public-key ./public.pem --key-id demo-operator --require-signature -- node ./examples/destructive-action/server.mjs
 ```
 
 The public key is a deployment trust input; it is not taken from the receipt.
@@ -210,7 +211,7 @@ The public key is a deployment trust input; it is not taken from the receipt.
 
 The npm package `trigger-mcp-proxy` is intentionally small:
 
-- zero runtime dependencies;
+- JSON Schema validation with Ajv and ajv-formats;
 - Node.js 18+;
 - stdio JSON-RPC pass-through;
 - diagnostics on stderr;
@@ -323,7 +324,8 @@ npm test
 npm pack --dry-run
 ```
 
-No third-party runtime dependencies are required.
+Run `npm ci` first; runtime schema validation uses Ajv and ajv-formats.
+For the independent Python signature check, install `conformance/requirements.txt`.
 
 ## Versioning and status
 
@@ -353,3 +355,12 @@ The goal is not a centralized authority. The goal is a shared protocol for makin
 ## License
 
 CC0 1.0 Universal.
+
+## Optional local trust enforcement
+
+The [local trust profile](protocol/local-trust-profile.md) adds explicit key-ID
+binding, per-call Proposal/Decision/Authority and bounded delegation checks,
+fresh local revocation snapshots, and durable single-use receipt claims across
+processes on one host. Enable `--trust-state` and `--replay-dir` with
+`--require-signature`. General authority graphs, policy evaluation, distributed
+revocation and distributed replay stores remain deployment responsibilities.

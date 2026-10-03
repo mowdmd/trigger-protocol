@@ -9,7 +9,7 @@
     "id":{"type":"string","minLength":1},
     "protocol":{"const":"trigger/0.2"},
     "proposal_id":{"type":"string","minLength":1},
-    "proposal_hash":{"type":"string","minLength":1},
+    "proposal_hash":{"type":"string","minLength":1,"pattern":"^sha256:[0-9a-f]{64}$"},
     "decision_id":{"type":"string","minLength":1},
     "actor":{"type":"string","minLength":1},
     "authority_id":{"type":"string","minLength":1},

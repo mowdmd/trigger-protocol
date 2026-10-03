@@ -44,7 +44,7 @@ Missing, malformed, or mismatched bindings are rejected. This adapter does not u
 
 The proxy does not create authority. It consumes an authorization artifact issued elsewhere.
 
-The proxy does not dereference `decision_id` or an authority registry by itself. A deployment that needs full cross-object conformance MUST perform those checks in its trust/execution layer.
+Without `--trust-state`, the proxy does not dereference `decision_id` or an authority registry by itself. A deployment that needs full cross-object conformance MUST perform those checks in its trust/execution layer.
 
 ## Why MCP first?
 
@@ -61,3 +61,5 @@ The same semantic adapter can later be implemented for HTTP gateways, job queues
 - forcing a human click for every operation.
 
 Human participation remains one possible governance implementation; the protocol's invariant is explicit authorization, not a universal UI.
+
+The optional [local trust profile](protocol/local-trust-profile.md) checks local records and revocation per invocation and supports a persistent single-use replay store.

@@ -1,0 +1,54 @@
+{
+  "updated_at": "2026-01-01T00:00:00Z",
+  "expires_at": "2099-01-01T00:00:00Z",
+  "proposals": [
+    {
+      "id": "proposal-demo-hello",
+      "protocol": "trigger/0.2",
+      "agent": "agent:demo",
+      "action": "mcp.tools/call",
+      "scope": "hello",
+      "extensions": {
+        "https://trigger-protocol.org/ns/mcp-proxy": {
+          "tool_name": "hello",
+          "arguments_sha256": "381e8d61c5e6b05220e97e611f591e6e8c923ee618981b48d121657de590cf30"
+        }
+      }
+    }
+  ],
+  "decisions": [
+    {
+      "proposal_id": "proposal-demo-hello",
+      "proposal_hash": "sha256:a38ab8c414e62abd0a8f724c91f53dedb928611bf0cf7f0051acb7e475579059",
+      "actor": "human:demo",
+      "authority_id": "demo-authority",
+      "issued_at": "2026-01-01T00:00:00Z",
+      "id": "decision-demo-hello",
+      "protocol": "trigger/0.2",
+      "decision": "approve"
+    }
+  ],
+  "authorities": [
+    {
+      "id": "demo-authority",
+      "protocol": "trigger/0.2",
+      "holder": "human:demo",
+      "scope": "hello",
+      "action_patterns": [
+        "mcp.tools/call"
+      ]
+    }
+  ],
+  "delegations": [],
+  "key_bindings": [
+    {
+      "key_id": "operator",
+      "actor": "human:demo",
+      "authority_ids": [
+        "demo-authority"
+      ]
+    }
+  ],
+  "revoked_receipt_ids": [],
+  "revoked_key_ids": []
+}
